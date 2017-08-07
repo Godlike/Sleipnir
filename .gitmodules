@@ -1,0 +1,6 @@
+[submodule "godlike/Unicorn"]
+	path = godlike/Unicorn
+	url = git@github.com:Godlike/Unicorn.git
+[submodule "godlike/Pegasus"]
+	path = godlike/Pegasus
+	url = git@github.com:Godlike/Pegasus.git
