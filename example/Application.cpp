@@ -394,12 +394,11 @@ void Application::SceneReset()
     using unicorn::video::geometry::MeshDescriptor;
     using unicorn::video::geometry::Primitives;
 
-    const glm::dvec3 renderPlanePosition = {0.0f, 0.0f, -20.0f};
-    const glm::dvec3 physicsPlanePosition = {0.0f, 20.0f, 0.0f}; // REEEEEEEE
+    const glm::dvec3 planePosition = {0.0f, 20.0f, 0.0f};
 
     MeshDescriptor* pPlane = new MeshDescriptor(Primitives::Quad(*(m_pVkRenderer->SpawnMesh())));
+    pPlane->Translate(planePosition);
     pPlane->Rotate(glm::radians(90.0f), {1, 0, 0});
-    pPlane->Translate(renderPlanePosition);
     pPlane->Scale({100.00f, 100.0f, 0.0f});
     pPlane->SetColor({0.18f, 0.31f, 0.31f});
     m_worldObjects.push_back(pPlane);
@@ -407,7 +406,7 @@ void Application::SceneReset()
     // Physics part
     m_particles.emplace_back();
     pegasus::Particle& particle = m_particles.back();
-    particle.SetPosition(physicsPlanePosition);
+    particle.SetPosition(planePosition);
     particle.SetInverseMass(0);
 
     m_rigidBodies.emplace_back(
