@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project(Sleipnir)
+project(sleipnir)
 
 option(SLEIPNIR_BUILD_DOCUMENTATION "Build documentation" OFF)
 option(SLEIPNIR_BUILD_DEMOS "Build demo projects" ON)
@@ -25,7 +25,7 @@ endif()
 
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Flag indicating if we want to build shared libraries")
 
-# Unicorn Engine
+# Unicorn Render
 message("========================================")
 message("== Preparing Unicorn rendering engine ==")
 message("========================================")
@@ -44,7 +44,7 @@ message("======================================")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Pegasus)
 
 # Prepare install package
-set(CPACK_PACKAGE_NAME "Sleipnir")
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_VENDOR "Godlike")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Yet another game engine")
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
@@ -56,6 +56,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "Godlike")
 set(CPACK_GENERATOR "DEB;ZIP")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Godlike")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libglm-dev")
 
 set(CPACK_INSTALL_CMAKE_PROJECTS
     "${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};godlike_libraries;lib"
