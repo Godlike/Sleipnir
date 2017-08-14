@@ -63,3 +63,10 @@ set(CPACK_INSTALL_CMAKE_PROJECTS
 )
 
 include(CPack)
+
+add_custom_target(
+    mock_install
+    DEPENDS ${UNICORN_RENDER_LIB} ${PEGASUS_PHYSICS_LIB}
+    COMMAND ${CMAKE_COMMAND} -DCOMPONENT=godlike_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCOMPONENT=godlike_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+)
