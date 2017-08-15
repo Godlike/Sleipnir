@@ -5,10 +5,12 @@
 #include <unicorn/system/input/Key.hpp>
 #include <unicorn/system/input/Modifier.hpp>
 
+#include <unicorn/video/Color.hpp>
 #include <unicorn/video/Graphics.hpp>
 #include <unicorn/video/geometry/Primitives.hpp>
 
 #include <functional>
+#include <random>
 
 Application::Application(unicorn::Settings& settings, unicorn::UnicornRender* pRender)
     : m_pRender(pRender)
@@ -45,7 +47,7 @@ Application::Application(unicorn::Settings& settings, unicorn::UnicornRender* pR
 
     m_pVkRenderer = pGraphics->SpawnRenderer(pWindow);
 
-    m_pVkRenderer->SetBackgroundColor(unicorn::video::Color::LightPink);
+    m_pVkRenderer->SetBackgroundColor(unicorn::video::Color::LightPink());
     m_pCameraController = new unicorn::video::CameraFpsController(m_pVkRenderer->GetCamera());
 
     // Binds

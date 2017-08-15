@@ -53,13 +53,22 @@ set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "Godlike")
 
-set(CPACK_GENERATOR "DEB;ZIP")
+if (UNIX)
+    set(CPACK_GENERATOR "DEB;ZIP")
+else()
+    set(CPACK_GENERATOR "ZIP")
+endif()
+
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Godlike")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+# set(CPACK_COMPONENTS_ALL godlike_data godlike_headers godlike_libraries)
+
 set(CPACK_INSTALL_CMAKE_PROJECTS
-    "${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};godlike_libraries;lib"
-    "${CMAKE_CURRENT_BINARY_DIR};${PROJECT_NAME};godlike_headers;include"
+    "${CMAKE_CURRENT_BINARY_DIR};data;godlike_data;."
+    "${CMAKE_CURRENT_BINARY_DIR};headers;godlike_headers;."
+    "${CMAKE_CURRENT_BINARY_DIR};libraries;godlike_libraries;."
 )
 
 include(CPack)
@@ -67,6 +76,7 @@ include(CPack)
 add_custom_target(
     mock_install
     DEPENDS ${UNICORN_RENDER_LIB} ${PEGASUS_PHYSICS_LIB}
-    COMMAND ${CMAKE_COMMAND} -DCOMPONENT=godlike_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
-    COMMAND ${CMAKE_COMMAND} -DCOMPONENT=godlike_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=godlike_data -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=godlike_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=godlike_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 )
