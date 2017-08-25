@@ -25,6 +25,26 @@ endif()
 
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Flag indicating if we want to build shared libraries")
 
+# Prepare install information
+message("===============================")
+message("== Preparing Sleipnir Engine ==")
+message("===============================")
+
+set(SLEIPNIR_NAME ${PROJECT_NAME})
+set(SLEIPNIR_VENDOR "Godlike")
+set(SLEIPNIR_MAINTAINER ${SLEIPNIR_VENDOR})
+set(SLEIPNIR_DESCRIPTION "Yet another game engine")
+set(SLEIPNIR_INSTALL_DIRECTORY "Godlike")
+
+set(SLEIPNIR_VERSION_MAJOR 0)
+set(SLEIPNIR_VERSION_MINOR 1)
+set(SLEIPNIR_VERSION_PATCH 0)
+set(SLEIPNIR_VERSION_TWEAK 0)
+
+set(SLEIPNIR_VERSION "${SLEIPNIR_VERSION_MAJOR}.${SLEIPNIR_VERSION_MINOR}.${SLEIPNIR_VERSION_PATCH}")
+
+message(STATUS "Version: ${SLEIPNIR_VERSION}")
+
 # Unicorn Render
 message("========================================")
 message("== Preparing Unicorn rendering engine ==")
@@ -47,22 +67,6 @@ set(PEGASUS_BUILD_DEMOS OFF CACHE BOOL "Build Pegasus demo.")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Pegasus)
 
 # Install information
-if (NOT DEFINED INSTALL_LIBRARY_DIR)
-    set(INSTALL_LIBRARY_DIR "lib" CACHE STRING "Path to directory holding libraries")
-endif()
-
-set(SLEIPNIR_NAME ${PROJECT_NAME})
-set(SLEIPNIR_VENDOR "Godlike")
-set(SLEIPNIR_MAINTAINER ${SLEIPNIR_VENDOR})
-set(SLEIPNIR_DESCRIPTION "Yet another game engine")
-set(SLEIPNIR_INSTALL_DIRECTORY "Godlike")
-
-set(SLEIPNIR_VERSION_MAJOR 0)
-set(SLEIPNIR_VERSION_MINOR 1)
-set(SLEIPNIR_VERSION_PATCH 0)
-
-set(SLEIPNIR_VERSION "${SLEIPNIR_VERSION_MAJOR}.${SLEIPNIR_VERSION_MINOR}.${SLEIPNIR_VERSION_PATCH}")
-
 if (UNIX)
     set(SLEIPNIR_GENERATOR "DEB;ZIP")
 else()
