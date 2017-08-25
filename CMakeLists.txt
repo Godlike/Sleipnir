@@ -67,8 +67,20 @@ set(PEGASUS_BUILD_DEMOS OFF CACHE BOOL "Build Pegasus demo.")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Pegasus)
 
 # Install information
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+set(HAS_NSIS FALSE)
+
+if (WIN32)
+    find_package(NSIS)
+
+    set(HAS_NSIS NSIS_FOUND)
+endif()
+
 if (UNIX)
-    set(SLEIPNIR_GENERATOR "DEB;ZIP")
+    set(SLEIPNIR_GENERATOR "DEB")
+elseif (WIN32 AND HAS_NSIS)
+    set(SLEIPNIR_GENERATOR "NSIS")
 else()
     set(SLEIPNIR_GENERATOR "ZIP")
 endif()
@@ -90,17 +102,49 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
-set(CPACK_INSTALL_CMAKE_PROJECTS
-    "${CMAKE_CURRENT_BINARY_DIR};data;unicorn_data;."
-    "${CMAKE_CURRENT_BINARY_DIR};headers;unicorn_headers;."
-    "${CMAKE_CURRENT_BINARY_DIR};extra;unicorn_extra;."
-    "${CMAKE_CURRENT_BINARY_DIR};libraries;unicorn_libraries;."
-
-    "${CMAKE_CURRENT_BINARY_DIR};data;pegasus_data;."
-    "${CMAKE_CURRENT_BINARY_DIR};headers;pegasus_headers;."
-    "${CMAKE_CURRENT_BINARY_DIR};extra;pegasus_extra;."
-    "${CMAKE_CURRENT_BINARY_DIR};libraries;pegasus_libraries;."
+set(CPACK_COMPONENTS_ALL
+    unicorn_data
+    unicorn_headers
+    unicorn_extra
+    unicorn_libraries
+    pegasus_headers
+    pegasus_extra
+    pegasus_libraries
 )
+
+set(CPACK_COMPONENT_GROUP_RUNTIME_DESCRIPTION "Libraries and shaders")
+set(CPACK_COMPONENT_GROUP_DEVELOPMENT_DESCRIPTION "Headers and third-party dependencies")
+set(CPACK_COMPONENT_GROUP_DEVELOPMENT_EXPANDED ON)
+
+set(CPACK_COMPONENT_UNICORN_DATA_DISPLAY_NAME "Unicorn Data")
+set(CPACK_COMPONENT_UNICORN_DATA_DESCRIPTION "Basic shaders")
+set(CPACK_COMPONENT_UNICORN_DATA_GROUP "Runtime")
+
+set(CPACK_COMPONENT_UNICORN_LIBRARIES_DISPLAY_NAME "Unicorn Library")
+set(CPACK_COMPONENT_UNICORN_LIBRARIES_DESCRIPTION "Unicorn Render library")
+set(CPACK_COMPONENT_UNICORN_LIBRARIES_GROUP "Runtime")
+
+set(CPACK_COMPONENT_UNICORN_HEADERS_DISPLAY_NAME "Unicorn Headers")
+set(CPACK_COMPONENT_UNICORN_HEADERS_DESCRIPTION "Headers for Unicorn Render library. Depends on Unicorn Library and Unicorn Extra.")
+set(CPACK_COMPONENT_UNICORN_HEADERS_GROUP "Development")
+set(CPACK_COMPONENT_UNICORN_HEADERS_DEPENDS unicorn_libraries unicorn_extra)
+
+set(CPACK_COMPONENT_UNICORN_EXTRA_DISPLAY_NAME "Unicorn Extra")
+set(CPACK_COMPONENT_UNICORN_EXTRA_DESCRIPTION "All needed third-party headers for Unicorn Headers")
+set(CPACK_COMPONENT_UNICORN_EXTRA_GROUP "Development")
+
+set(CPACK_COMPONENT_PEGASUS_LIBRARIES_DISPLAY_NAME "Pegasus Library")
+set(CPACK_COMPONENT_PEGASUS_LIBRARIES_DESCRIPTION "Pegasus Physics library")
+set(CPACK_COMPONENT_PEGASUS_LIBRARIES_GROUP "Runtime")
+
+set(CPACK_COMPONENT_PEGASUS_HEADERS_DISPLAY_NAME "Pegasus Headers")
+set(CPACK_COMPONENT_PEGASUS_HEADERS_DESCRIPTION "Headers for Pegasus Physics library. Depends on Pegasus Library and Pegasus Extra.")
+set(CPACK_COMPONENT_PEGASUS_HEADERS_GROUP "Development")
+set(CPACK_COMPONENT_PEGASUS_HEADERS_DEPENDS pegasus_libraries pegasus_extra)
+
+set(CPACK_COMPONENT_PEGASUS_EXTRA_DISPLAY_NAME "Pegasus Extra")
+set(CPACK_COMPONENT_PEGASUS_EXTRA_DESCRIPTION "All needed third-party headers for Pegasus Headers")
+set(CPACK_COMPONENT_PEGASUS_EXTRA_GROUP "Development")
 
 include(CPack)
 
@@ -113,7 +157,6 @@ add_custom_target( mock_install
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 
-    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_data -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
