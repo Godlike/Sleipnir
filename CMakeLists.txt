@@ -67,6 +67,9 @@ set(PEGASUS_BUILD_DEMOS OFF CACHE BOOL "Build Pegasus demo.")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Pegasus)
 
 # Install information
+message("=====================================")
+message("== Preparing packaging information ==")
+message("=====================================")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(HAS_NSIS FALSE)
