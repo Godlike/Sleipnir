@@ -9,6 +9,7 @@ project(Sleipnir)
 option(SLEIPNIR_BUILD_DOCUMENTATION "Build documentation" OFF)
 option(SLEIPNIR_BUILD_DEMOS "Build demo projects" OFF)
 option(SLEIPNIR_BUILD_TESTS "Build tests" OFF)
+option(SLEIPNIR_SHLIBDEPS "Calculate shared library dependencies (for .deb only)" ON)
 
 # Setup output folders if none were specified
 if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
@@ -43,6 +44,10 @@ set(SLEIPNIR_VERSION_TWEAK 0)
 
 set(SLEIPNIR_VERSION "${SLEIPNIR_VERSION_MAJOR}.${SLEIPNIR_VERSION_MINOR}.${SLEIPNIR_VERSION_PATCH}")
 
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+if (UNIX)
+    message(STATUS "SLEIPNIR_SHLIBDEPS: ${SLEIPNIR_SHLIBDEPS}")
+endif()
 message(STATUS "Version: ${SLEIPNIR_VERSION}")
 
 # Unicorn Render
@@ -84,8 +89,18 @@ set(SLEIPNIR_PACKAGE_NAME)
 
 if (UNIX)
     set(SLEIPNIR_GENERATOR "DEB")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${SLEIPNIR_MAINTAINER})
 
-    if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+    if (SLEIPNIR_SHLIBDEPS)
+        set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    else()
+        set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS
+            "libc6 (>= 2.14), libgcc1 (>= 1:3.0), libstdc++6 (>= 5.2), libvulkan1, libx11-6 (>= 2:1.2.99.901), libxcursor1 (>> 1.1.2), libxinerama1, libxrandr2 (>= 2:1.2.99.3)"
+        )
+    endif()
+
+    if (CMAKE_BUILD_TYPE MATCHES Debug)
         set(SLEIPNIR_PACKAGE_NAME ${SLEIPNIR_NAME}-dbg)
     else()
         set(SLEIPNIR_PACKAGE_NAME ${SLEIPNIR_NAME})
@@ -121,9 +136,6 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY ${SLEIPNIR_INSTALL_DIRECTORY})
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md)
 
 set(CPACK_GENERATOR ${SLEIPNIR_GENERATOR})
-
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${SLEIPNIR_MAINTAINER})
-set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
