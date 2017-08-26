@@ -81,6 +81,13 @@ if (UNIX)
     set(SLEIPNIR_GENERATOR "DEB")
 elseif (WIN32 AND HAS_NSIS)
     set(SLEIPNIR_GENERATOR "NSIS")
+    set(CPACK_NSIS_MODIFY_PATH ON)
+    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NSIS.definitions.nsh.in
+        ${CMAKE_CURRENT_BINARY_DIR}/resources/NSIS/NSIS.definitions.nsh
+    )
 else()
     set(SLEIPNIR_GENERATOR "ZIP")
 endif()
@@ -94,6 +101,8 @@ set(CPACK_PACKAGE_VERSION_MINOR ${SLEIPNIR_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${SLEIPNIR_VERSION_PATCH})
 set(CPACK_PACKAGE_VERSION ${SLEIPNIR_VERSION})
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${SLEIPNIR_INSTALL_DIRECTORY})
+
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md)
 
 set(CPACK_GENERATOR ${SLEIPNIR_GENERATOR})
 
@@ -112,39 +121,62 @@ set(CPACK_COMPONENTS_ALL
     pegasus_libraries
 )
 
-set(CPACK_COMPONENT_GROUP_RUNTIME_DESCRIPTION "Libraries and shaders")
-set(CPACK_COMPONENT_GROUP_DEVELOPMENT_DESCRIPTION "Headers and third-party dependencies")
-set(CPACK_COMPONENT_GROUP_DEVELOPMENT_EXPANDED ON)
+include(CPackComponent)
 
-set(CPACK_COMPONENT_UNICORN_DATA_DISPLAY_NAME "Unicorn Data")
-set(CPACK_COMPONENT_UNICORN_DATA_DESCRIPTION "Basic shaders")
-set(CPACK_COMPONENT_UNICORN_DATA_GROUP "Runtime")
+# CPack component groups
+cpack_add_component_group(runtime
+    DESCRIPTION "Libraries and shaders"
+)
 
-set(CPACK_COMPONENT_UNICORN_LIBRARIES_DISPLAY_NAME "Unicorn Library")
-set(CPACK_COMPONENT_UNICORN_LIBRARIES_DESCRIPTION "Unicorn Render library")
-set(CPACK_COMPONENT_UNICORN_LIBRARIES_GROUP "Runtime")
+cpack_add_component_group(development
+    DESCRIPTION "Headers and third-party dependencies"
+    EXPANDED
+)
 
-set(CPACK_COMPONENT_UNICORN_HEADERS_DISPLAY_NAME "Unicorn Headers")
-set(CPACK_COMPONENT_UNICORN_HEADERS_DESCRIPTION "Headers for Unicorn Render library. Depends on Unicorn Library and Unicorn Extra.")
-set(CPACK_COMPONENT_UNICORN_HEADERS_GROUP "Development")
-set(CPACK_COMPONENT_UNICORN_HEADERS_DEPENDS unicorn_libraries unicorn_extra)
+# CPack components
+cpack_add_component(unicorn_data
+    DISPLAY_NAME "Unicorn Data"
+    DESCRIPTION "Basic shaders"
+    GROUP "Runtime"
+)
 
-set(CPACK_COMPONENT_UNICORN_EXTRA_DISPLAY_NAME "Unicorn Extra")
-set(CPACK_COMPONENT_UNICORN_EXTRA_DESCRIPTION "All needed third-party headers for Unicorn Headers")
-set(CPACK_COMPONENT_UNICORN_EXTRA_GROUP "Development")
+cpack_add_component(unicorn_libraries
+    DISPLAY_NAME "Unicorn Library"
+    DESCRIPTION "Unicorn Render library"
+    GROUP "Runtime"
+)
 
-set(CPACK_COMPONENT_PEGASUS_LIBRARIES_DISPLAY_NAME "Pegasus Library")
-set(CPACK_COMPONENT_PEGASUS_LIBRARIES_DESCRIPTION "Pegasus Physics library")
-set(CPACK_COMPONENT_PEGASUS_LIBRARIES_GROUP "Runtime")
+cpack_add_component(unicorn_headers
+    DISPLAY_NAME "Unicorn Headers"
+    DESCRIPTION "Headers for Unicorn Render library. Depends on Unicorn Library and Unicorn Extra."
+    GROUP "Development"
+    DEPENDS unicorn_libraries unicorn_extra
+)
 
-set(CPACK_COMPONENT_PEGASUS_HEADERS_DISPLAY_NAME "Pegasus Headers")
-set(CPACK_COMPONENT_PEGASUS_HEADERS_DESCRIPTION "Headers for Pegasus Physics library. Depends on Pegasus Library and Pegasus Extra.")
-set(CPACK_COMPONENT_PEGASUS_HEADERS_GROUP "Development")
-set(CPACK_COMPONENT_PEGASUS_HEADERS_DEPENDS pegasus_libraries pegasus_extra)
+cpack_add_component(unicorn_extra
+    DISPLAY_NAME "Unicorn Extra"
+    DESCRIPTION "All needed third-party headers for Unicorn Headers"
+    GROUP "Development"
+)
 
-set(CPACK_COMPONENT_PEGASUS_EXTRA_DISPLAY_NAME "Pegasus Extra")
-set(CPACK_COMPONENT_PEGASUS_EXTRA_DESCRIPTION "All needed third-party headers for Pegasus Headers")
-set(CPACK_COMPONENT_PEGASUS_EXTRA_GROUP "Development")
+cpack_add_component(pegasus_libraries
+    DISPLAY_NAME "Pegasus Library"
+    DESCRIPTION "Pegasus Physics library"
+    GROUP "Runtime"
+)
+
+cpack_add_component(pegasus_headers
+    DISPLAY_NAME "Pegasus Headers"
+    DESCRIPTION "Headers for Pegasus Physics library. Depends on Pegasus Library and Pegasus Extra."
+    GROUP "Development"
+    DEPENDS pegasus_libraries pegasus_extra
+)
+
+cpack_add_component(pegasus_extra
+    DISPLAY_NAME "Pegasus Extra"
+    DESCRIPTION "All needed third-party headers for Pegasus Headers"
+    GROUP "Development"
+)
 
 include(CPack)
 
