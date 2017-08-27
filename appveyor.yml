@@ -1,34 +1,40 @@
-version: 0.1.{build}
+version: "#{build}"
 
 image: Visual Studio 2017
 
+branches:
+  only:
+  - master
+
+skip_tags: true
+
 configuration:
-  - Debug
-  - Release
+- Debug
+- Release
 
 platform:
-  - Win32
-  - x64
+- Win32
+- x64
 clone_folder: "c:\\Sleipnir"
 
 environment:
   VULKAN_SDK: "c:\\VulkanSDK\\1.0.42.2\\"
 
-init:
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - curl -fsS -o vulkan-installer.exe https://vulkan.lunarg.com/sdk/download/1.0.42.2/windows/VulkanSDK-1.0.42.2-Installer.exe?Human=true
-  - vulkan-installer.exe /S
-  - rm -f vulkan-installer.exe
-
 install:
-  - git submodule update --init --recursive
-  - mkdir build
-  - cd build
-  - if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=Visual Studio 15 2017
-  - if "%platform%"=="x64" set CMAKE_GENERATOR_NAME=Visual Studio 15 2017 Win64
-  - if "%configuration%"=="Debug" set CMAKE_BUILD_TYPE=Debug
-  - if "%configuration%"=="Release" set CMAKE_BUILD_TYPE=Release
-  - cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE="%CMAKE_BUILD_TYPE%" ..
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+- curl -fsS -o vulkan-installer.exe https://vulkan.lunarg.com/sdk/download/1.0.42.2/windows/VulkanSDK-1.0.42.2-Installer.exe?Human=true
+- vulkan-installer.exe /S
+- rm -f vulkan-installer.exe
+
+before_build:
+- git submodule update --init --recursive
+- mkdir build
+- cd build
+- if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=Visual Studio 15 2017
+- if "%platform%"=="x64" set CMAKE_GENERATOR_NAME=Visual Studio 15 2017 Win64
+- if "%configuration%"=="Debug" set CMAKE_BUILD_TYPE=Debug
+- if "%configuration%"=="Release" set CMAKE_BUILD_TYPE=Release
+- cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE="%CMAKE_BUILD_TYPE%" ..
 
 build:
   project: "build\\Sleipnir.sln"
@@ -49,3 +55,17 @@ notifications:
   on_build_success: false
   on_build_failure: true
   on_build_status_changed: true
+
+before_deploy:
+- set /p SLEIPNIR_VERSION=<version
+
+deploy:
+  release: v$(SLEIPNIR_VERSION).$(APPVEYOR_BUILD_NUMBER)
+  provider: GitHub
+  auth_token:
+    secure: OHXqodAtK8hZbNdRS8FOuG5WbdchfvTa9xG4yk4QFwf1zBK/qgpJODgeN6ShF4bF
+  artifact: /Sleipnir-.*\.exe/
+  draft: false
+  prerelease: true
+  on:
+    branch: master

@@ -1,19 +1,15 @@
 branches:
-  except:
-    gh-pages
-
+  only: master
 env:
   global:
-    - GH_REPO_NAME: Sleipnir
-    - GH_REPO_REF: github.com/Godlike/Sleipnir.git
-    - BUILD_DIR: build
-
+  - GH_REPO_NAME: Sleipnir
+  - GH_REPO_REF: github.com/Godlike/Sleipnir.git
+  - BUILD_DIR: build
 sudo: required
 os: linux
 dist: trusty
 language: cpp
 compiler: gcc
-
 matrix:
   exclude:
   - compiler: gcc
@@ -26,8 +22,8 @@ matrix:
         packages:
         - g++-6
     env:
-      - COMPILER=g++-6
-      - CMAKE_BUILD_TYPE=Debug
+    - COMPILER=g++-6
+    - CMAKE_BUILD_TYPE=Debug
   - compiler: gcc
     addons:
       apt:
@@ -36,8 +32,8 @@ matrix:
         packages:
         - g++-6
     env:
-      - COMPILER=g++-6
-      - CMAKE_BUILD_TYPE=Release
+    - COMPILER=g++-6
+    - CMAKE_BUILD_TYPE=Release
   - compiler: clang
     addons:
       apt:
@@ -48,8 +44,8 @@ matrix:
         - clang-3.9
         - g++-6
     env:
-      - COMPILER=clang++-3.9
-      - CMAKE_BUILD_TYPE=Debug
+    - COMPILER=clang++-3.9
+    - CMAKE_BUILD_TYPE=Debug
   - compiler: clang
     addons:
       apt:
@@ -60,33 +56,42 @@ matrix:
         - clang-3.9
         - g++-6
     env:
-      - COMPILER=clang++-3.9
-      - CMAKE_BUILD_TYPE=Release
-
+    - COMPILER=clang++-3.9
+    - CMAKE_BUILD_TYPE=Release
 git:
   submodules: false
-
 before_install:
 - sudo apt-get -qq update
-- sudo apt-get install -y libx11-xcb-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+- sudo apt-get install -y libx11-xcb-dev libxrandr-dev libxinerama-dev libxcursor-dev
+  libxi-dev
 - git submodule update --init --recursive
 - wget -O vulkan.run "https://vulkan.lunarg.com/sdk/download/1.0.42.2/linux/vulkansdk-linux-x86_64-1.0.42.2.run"
 - chmod ugo+x vulkan.run
 - "./vulkan.run"
 - export VULKAN_SDK="$(pwd)/VulkanSDK/1.0.42.2/x86_64"
 - export PATH=$PATH:$VULKAN_SDK/x86_64/bin
-
 script:
 - cd $TRAVIS_BUILD_DIR
 - chmod +x travisBuildScript.sh
-- ./travisBuildScript.sh
-
+- "./travisBuildScript.sh"
 after_success:
-- cd $TRAVIS_BUILD_DIR
-
+- cd $TRAVIS_BUILD_DIR/$BUILD_DIR
+- export SLEIPNIR_VERSION=`cat version`
 notifications:
   email:
     recipients:
     - odintsoff@gmail.com
     on_success: change
     on_failure: always
+deploy:
+  provider: releases
+  api_key:
+    secure: SK03cZ291r9bt9kIwJQNdfxUnlfMuxHLGwl+9+7NEk8BT3PgML09ETs2DDOOO8un4hZC57MaMqjigtzQdzOaHbg5IM7CZU4JK+F5qrOJzZ7/WlNX5jTFE/l4YWuZX3FsKJwlQh3ZSBzPskDXcQqfyuLgLLEZKSwOcDIj5paHAigu3IJieMuiDWrOGF+w0/45axPJuyrefcnGD0CRLSt/b+MzBYiIdFjqlirm+dUXPN2HcfjxRwgaKUXo6gNzRyflNzEbjIBXPyYMImsj/4QhKkeTa3HU8JEfZDDv4GOK87plMuqrUOpPPl6Uo0DaaIeH2YyzkXDlEvkcdfjYlrJn35lrmS24slzDUtHIlLz5rFMTrReK5IgxzOoh2NWwsoi/QD5UhD8w7IFfY2EErzOC0SSvYeuz5ESQfOU/YNLmDttC+h7celtz6741207rQZi71hYbUOQ58/zJEp4Wo3+H9GqycTsgB+Y7PP/y0tcJ5aML8Vkx/PaFoCJIaA2GO8DJrNgjY62yogSUbnLIqWcBaNVNRdovIpJQFTeFPX7Y4ZkQffuLud+iM6zjbXWoR8cPRji5IsDB8vQKNpErHMgySrnyExmqSI5JiyTI2hOxj/NKncUGuVXNAhxlMYWk+dfobMdnbKjNjpMK7XUM+ELkHb95MsH1ei8Lv0VXcpkZ5Eg=
+  file_glob: true
+  file: "*.deb"
+  name: "v$SLEIPNIR_VERSION.$TRAVIS_BUILD_NUMBER"
+  tag_name: "v$SLEIPNIR_VERSION.$TRAVIS_BUILD_NUMBER"
+  skip_cleanup: true
+  prerelease: true
+  on:
+    repo: Godlike/Sleipnir

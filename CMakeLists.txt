@@ -50,6 +50,13 @@ if (UNIX)
 endif()
 message(STATUS "Version: ${SLEIPNIR_VERSION}")
 
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version
+
+    @ONLY
+)
+
 # Unicorn Render
 message("========================================")
 message("== Preparing Unicorn rendering engine ==")
@@ -100,10 +107,10 @@ if (UNIX)
         )
     endif()
 
+    set(SLEIPNIR_PACKAGE_NAME "${SLEIPNIR_NAME}-${CMAKE_CXX_COMPILER_ID}")
+
     if (CMAKE_BUILD_TYPE MATCHES Debug)
-        set(SLEIPNIR_PACKAGE_NAME ${SLEIPNIR_NAME}-dbg)
-    else()
-        set(SLEIPNIR_PACKAGE_NAME ${SLEIPNIR_NAME})
+        set(SLEIPNIR_PACKAGE_NAME ${SLEIPNIR_PACKAGE_NAME}-dbg)
     endif()
 elseif (WIN32 AND HAS_NSIS)
     set(SLEIPNIR_GENERATOR "NSIS")
