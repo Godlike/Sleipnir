@@ -4,3 +4,9 @@
 [submodule "godlike/Pegasus"]
 	path = godlike/Pegasus
 	url = https://github.com/Godlike/Pegasus.git
+[submodule "godlike/Epona"]
+	path = godlike/Epona
+	url = https://github.com/Godlike/Epona.git
+[submodule "godlike/Arion"]
+	path = godlike/Arion
+	url = https://github.com/Godlike/Arion.git

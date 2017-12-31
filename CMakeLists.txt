@@ -26,6 +26,9 @@ endif()
 
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Flag indicating if we want to build shared libraries")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../EponaMath:$ORIGIN/../ArionCollision")
+
 # Prepare install information
 message("===============================")
 message("== Preparing Sleipnir Engine ==")
@@ -69,6 +72,36 @@ set(UNICORN_CUSTOM_PACKAGING ON CACHE BOOL "Prepare custom CPack configuration f
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Unicorn)
 
+# Epona
+message("==================================")
+message("== Preparing Epona math library ==")
+message("==================================")
+
+set(EPONA_BUILD_DEMOS OFF CACHE BOOL "Build Epona demo.")
+set(EPONA_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Epona" CACHE STRING "Epona root directory.")
+
+add_subdirectory(${EPONA_ROOT})
+
+find_package(Epona)
+if (Epona_FOUND)
+    include(${Epona_CONFIG_DIR}/EponaConfig.cmake)
+endif()
+
+# Arion
+message("=======================================")
+message("== Preparing Arion collision library ==")
+message("=======================================")
+
+set(ARION_BUILD_DEMOS OFF CACHE BOOL "Build Arion demo.")
+set(ARION_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Arion" CACHE STRING "Arion root directory.")
+
+add_subdirectory(${ARION_ROOT})
+
+find_package(Arion)
+if (Arion_FOUND)
+    include(${Arion_CONFIG_DIR}/ArionConfig.cmake)
+endif()
+
 # Pegasus
 message("======================================")
 message("== Preparing Pegasus physics engine ==")
@@ -82,7 +115,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Pegasus)
 message("=====================================")
 message("== Preparing packaging information ==")
 message("=====================================")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(HAS_NSIS FALSE)
 
@@ -97,6 +129,7 @@ set(SLEIPNIR_PACKAGE_NAME)
 if (UNIX)
     set(SLEIPNIR_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${SLEIPNIR_MAINTAINER})
+    set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS ON)
 
     if (SLEIPNIR_SHLIBDEPS)
         set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
@@ -154,6 +187,12 @@ set(CPACK_COMPONENTS_ALL
     pegasus_headers
     pegasus_extra
     pegasus_libraries
+    arion_headers
+    arion_extra
+    arion_libraries
+    epona_headers
+    epona_extra
+    epona_libraries
 )
 
 include(CPackComponent)
@@ -196,15 +235,16 @@ cpack_add_component(unicorn_extra
 
 cpack_add_component(pegasus_libraries
     DISPLAY_NAME "Pegasus Library"
-    DESCRIPTION "Pegasus Physics library"
+    DESCRIPTION "Pegasus Physics library. Depends on Arion Library."
     GROUP "Runtime"
+    DEPENDS arion_libraries
 )
 
 cpack_add_component(pegasus_headers
     DISPLAY_NAME "Pegasus Headers"
-    DESCRIPTION "Headers for Pegasus Physics library. Depends on Pegasus Library and Pegasus Extra."
+    DESCRIPTION "Headers for Pegasus Physics library. Depends on Pegasus Library, Pegasus Extra and Arion Headers."
     GROUP "Development"
-    DEPENDS pegasus_libraries pegasus_extra
+    DEPENDS pegasus_libraries pegasus_extra arion_headers
 )
 
 cpack_add_component(pegasus_extra
@@ -213,16 +253,63 @@ cpack_add_component(pegasus_extra
     GROUP "Development"
 )
 
+cpack_add_component(arion_libraries
+    DISPLAY_NAME "Arion Library"
+    DESCRIPTION "Arion Collision library. Depends on Epona Library."
+    GROUP "Runtime"
+    DEPENDS epona_libraries
+)
+
+cpack_add_component(arion_headers
+    DISPLAY_NAME "Arion Headers"
+    DESCRIPTION "Headers for Arion Collision library. Depends on Arion Library and Arion Extra."
+    GROUP "Development"
+    DEPENDS arion_libraries arion_extra
+)
+
+cpack_add_component(arion_extra
+    DISPLAY_NAME "Arion Extra"
+    DESCRIPTION "All needed third-party headers for Arion Headers"
+    GROUP "Development"
+)
+
+cpack_add_component(epona_libraries
+    DISPLAY_NAME "Epona Library"
+    DESCRIPTION "Epona Math library"
+    GROUP "Runtime"
+)
+
+cpack_add_component(epona_headers
+    DISPLAY_NAME "Epona Headers"
+    DESCRIPTION "Headers for Epona Math library. Depends on Epona Library and Epona Extra."
+    GROUP "Development"
+    DEPENDS epona_libraries epona_extra
+)
+
+cpack_add_component(epona_extra
+    DISPLAY_NAME "Epona Extra"
+    DESCRIPTION "All needed third-party headers for Epona Headers"
+    GROUP "Development"
+)
+
 include(CPack)
 
 # Perform install of needed components
 add_custom_target( mock_install
-    DEPENDS ${UNICORN_RENDER_LIB} ${PEGASUS_PHYSICS_LIB}
+    DEPENDS ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
 
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_data -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=epona_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=epona_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=epona_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=arion_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=arion_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=arion_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
