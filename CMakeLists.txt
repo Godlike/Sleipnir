@@ -27,7 +27,7 @@ endif()
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Flag indicating if we want to build shared libraries")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../EponaMath:$ORIGIN/../ArionCollision")
+list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../MuleUtilities:$ORIGIN/../EponaMath:$ORIGIN/../ArionCollision")
 
 # Prepare install information
 message("===============================")
@@ -59,6 +59,22 @@ configure_file(
 
     @ONLY
 )
+
+# Mule
+message("======================================")
+message("== Preparing Mule utilities library ==")
+message("======================================")
+
+set(MULE_BUILD_DOCUMENTATION ${SLEIPNIR_BUILD_DOCUMENTATION} CACHE BOOL "Build Mule documentation")
+set(MULE_BUILD_TESTS OFF CACHE BOOL "Build Mule tests")
+set(MULE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Mule" CACHE STRING "Mule root directory.")
+
+add_subdirectory(${MULE_ROOT})
+
+find_package(Mule)
+if (Mule_FOUND)
+    include(${Mule_CONFIG_DIR}/MuleUtilitiesConfig.cmake)
+endif()
 
 # Unicorn Render
 message("========================================")
@@ -180,16 +196,22 @@ set(CPACK_GENERATOR ${SLEIPNIR_GENERATOR})
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
 set(CPACK_COMPONENTS_ALL
+    mule_headers
+    mule_libraries
+
     unicorn_data
     unicorn_headers
     unicorn_extra
     unicorn_libraries
+
     pegasus_headers
     pegasus_extra
     pegasus_libraries
+
     arion_headers
     arion_extra
     arion_libraries
+
     epona_headers
     epona_extra
     epona_libraries
@@ -208,6 +230,20 @@ cpack_add_component_group(development
 )
 
 # CPack components
+
+cpack_add_component(mule_libraries
+    DISPLAY_NAME "Mule Library"
+    DESCRIPTION "Mule Utilities library"
+    GROUP "Runtime"
+)
+
+cpack_add_component(mule_headers
+    DISPLAY_NAME "Mule Headers"
+    DESCRIPTION "Headers for Mule Utilities library. Depends on Mule Library."
+    GROUP "Development"
+    DEPENDS mule_libraries
+)
+
 cpack_add_component(unicorn_data
     DISPLAY_NAME "Unicorn Data"
     DESCRIPTION "Basic shaders"
@@ -216,15 +252,16 @@ cpack_add_component(unicorn_data
 
 cpack_add_component(unicorn_libraries
     DISPLAY_NAME "Unicorn Library"
-    DESCRIPTION "Unicorn Render library"
+    DESCRIPTION "Unicorn Render library. Depends on Mule Library."
     GROUP "Runtime"
+    DEPENDS mule_libraries
 )
 
 cpack_add_component(unicorn_headers
     DISPLAY_NAME "Unicorn Headers"
-    DESCRIPTION "Headers for Unicorn Render library. Depends on Unicorn Library and Unicorn Extra."
+    DESCRIPTION "Headers for Unicorn Render library. Depends on Unicorn Library, Unicorn Extra and Mule Headers."
     GROUP "Development"
-    DEPENDS unicorn_libraries unicorn_extra
+    DEPENDS unicorn_libraries unicorn_extra mule_headers
 )
 
 cpack_add_component(unicorn_extra
@@ -296,7 +333,10 @@ include(CPack)
 
 # Perform install of needed components
 add_custom_target( mock_install
-    DEPENDS ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
+    DEPENDS ${MULE_UTILITIES_LIB} ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
+
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_data -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake

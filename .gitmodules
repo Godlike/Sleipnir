@@ -10,3 +10,9 @@
 [submodule "godlike/Arion"]
 	path = godlike/Arion
 	url = https://github.com/Godlike/Arion.git
+[submodule "godlike/Tulpar"]
+	path = godlike/Tulpar
+	url = https://github.com/Godlike/Tulpar.git
+[submodule "godlike/Mule"]
+	path = godlike/Mule
+	url = https://github.com/Godlike/Mule.git
