@@ -28,6 +28,7 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "Flag indicating if we want to build shared 
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../MuleUtilities:$ORIGIN/../EponaMath:$ORIGIN/../ArionCollision")
+set(CMAKE_DEBUG_POSTFIX "")
 
 # Prepare install information
 message("===============================")
@@ -146,6 +147,24 @@ if (UNIX)
     set(SLEIPNIR_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${SLEIPNIR_MAINTAINER})
     set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS ON)
+
+    set(CPACK_INSTALL_CMAKE_PROJECTS
+        "${CMAKE_CURRENT_BINARY_DIR};Mule Headers;mule_headers;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Mule Libraries;mule_libraries;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Unicorn Data;unicorn_data;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Unicorn Headers;unicorn_headers;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Unicorn Extra;unicorn_extra;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Unicorn Libraries;unicorn_libraries;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Pegasus Headers;pegasus_headers;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Pegasus Extra;pegasus_extra;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Pegasus Libraries;pegasus_libraries;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Arion Headers;arion_headers;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Arion Extra;arion_extra;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Arion Libraries;arion_libraries;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Epona Headers;epona_headers;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Epona Extra;epona_extra;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Epona Libraries;epona_libraries;/"
+    )
 
     if (SLEIPNIR_SHLIBDEPS)
         set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
