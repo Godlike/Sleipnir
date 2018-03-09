@@ -26,6 +26,8 @@ endif()
 
 set(BUILD_SHARED_LIBS ON CACHE BOOL "Flag indicating if we want to build shared libraries")
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../MuleUtilities:$ORIGIN/../EponaMath:$ORIGIN/../ArionCollision")
 set(CMAKE_DEBUG_POSTFIX "")

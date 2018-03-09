@@ -822,8 +822,20 @@ Section "-Core installation"
   ;Store installation folder
   WriteRegStr SHCTX "Software\@CPACK_PACKAGE_VENDOR@\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "" $INSTDIR
 
+  ${If} ${SectionIsSelected} ${mule_headers}
+    WriteRegStr HKLM "Software\Kitware\CMake\Packages\${MULE_UTILITIES_LIB}" "package_path" "$INSTDIR\lib\${MULE_UTILITIES_LIB}"
+  ${EndIf}
+
   ${If} ${SectionIsSelected} ${unicorn_headers}
     WriteRegStr HKLM "Software\Kitware\CMake\Packages\${UNICORN_RENDER_LIB}" "package_path" "$INSTDIR\lib\${UNICORN_RENDER_LIB}"
+  ${EndIf}
+
+  ${If} ${SectionIsSelected} ${epona_headers}
+    WriteRegStr HKLM "Software\Kitware\CMake\Packages\${EPONA_MATH_LIB}" "package_path" "$INSTDIR\lib\${EPONA_MATH_LIB}"
+  ${EndIf}
+
+  ${If} ${SectionIsSelected} ${arion_headers}
+    WriteRegStr HKLM "Software\Kitware\CMake\Packages\${ARION_COLLISION_LIB}" "package_path" "$INSTDIR\lib\${ARION_COLLISION_LIB}"
   ${EndIf}
 
   ${If} ${SectionIsSelected} ${pegasus_headers}
@@ -914,7 +926,19 @@ Section "-Add to path"
   StrCmp "@CPACK_NSIS_MODIFY_PATH@" "ON" 0 doNotAddToPath
   StrCmp $DO_NOT_ADD_TO_PATH "1" doNotAddToPath 0
     Push "PATH"
+    Push $INSTDIR\lib\${MULE_UTILITIES_LIB}
+    Call AddToEnvVar
+
+    Push "PATH"
     Push $INSTDIR\lib\${UNICORN_RENDER_LIB}
+    Call AddToEnvVar
+
+    Push "PATH"
+    Push $INSTDIR\lib\${EPONA_MATH_LIB}
+    Call AddToEnvVar
+
+    Push "PATH"
+    Push $INSTDIR\lib\${ARION_COLLISION_LIB}
     Call AddToEnvVar
 
     Push "PATH"
@@ -1076,12 +1100,27 @@ Section "Uninstall"
 
   DeleteRegKey /ifempty SHCTX "Software\@CPACK_PACKAGE_VENDOR@\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
 
+  DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${MULE_UTILITIES_LIB}"
   DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${UNICORN_RENDER_LIB}"
+  DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${EPONA_MATH_LIB}"
+  DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${ARION_COLLISION_LIB}"
   DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${PEGASUS_PHYSICS_LIB}"
 
   StrCmp $DO_NOT_ADD_TO_PATH_ "1" doNotRemoveFromPath 0
     Push "PATH"
+    Push $INSTDIR\lib\${MULE_UTILITIES_LIB}
+    Call un.RemoveFromEnvVar
+
+    Push "PATH"
     Push $INSTDIR\lib\${UNICORN_RENDER_LIB}
+    Call un.RemoveFromEnvVar
+
+    Push "PATH"
+    Push $INSTDIR\lib\${EPONA_MATH_LIB}
+    Call un.RemoveFromEnvVar
+
+    Push "PATH"
+    Push $INSTDIR\lib\${ARION_COLLISION_LIB}
     Call un.RemoveFromEnvVar
 
     Push "PATH"
