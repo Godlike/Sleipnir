@@ -97,6 +97,7 @@ message("== Preparing Epona math library ==")
 message("==================================")
 
 set(EPONA_BUILD_DEMOS OFF CACHE BOOL "Build Epona demo.")
+set(EPONA_BUILD_TESTS OFF CACHE BOOL "Build Epona tests.")
 set(EPONA_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Epona" CACHE STRING "Epona root directory.")
 
 add_subdirectory(${EPONA_ROOT})
@@ -112,6 +113,7 @@ message("== Preparing Arion collision library ==")
 message("=======================================")
 
 set(ARION_BUILD_DEMOS OFF CACHE BOOL "Build Arion demo.")
+set(ARION_BUILD_TESTS OFF CACHE BOOL "Build Arion tests.")
 set(ARION_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Arion" CACHE STRING "Arion root directory.")
 
 add_subdirectory(${ARION_ROOT})
@@ -127,8 +129,22 @@ message("== Preparing Pegasus physics engine ==")
 message("======================================")
 
 set(PEGASUS_BUILD_DEMOS OFF CACHE BOOL "Build Pegasus demo.")
+set(PEGASUS_BUILD_TESTS OFF CACHE BOOL "Build Pegasus tests.")
+set(PEGASUS_BUILD_DEBUG OFF CACHE BOOL "Build Pegasus debug.")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Pegasus)
+
+# Tulpar
+message("====================================")
+message("== Preparing Tulpar audio library ==")
+message("====================================")
+
+set(TULPAR_BUILD_DOCUMENTATION ${SLEIPNIR_BUILD_DOCUMENTATION} CACHE BOOL "Build Tulpar documentation")
+set(TULPAR_BUILD_DEMOS OFF CACHE BOOL "Build Tulpar demos")
+set(TULPAR_BUILD_TESTS OFF CACHE BOOL "Build Tulpar tests")
+set(TULPAR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Tulpar" CACHE STRING "Tulpar root directory.")
+
+add_subdirectory(${TULPAR_ROOT})
 
 # Install information
 message("=====================================")
@@ -153,6 +169,9 @@ if (UNIX)
     set(CPACK_INSTALL_CMAKE_PROJECTS
         "${CMAKE_CURRENT_BINARY_DIR};Mule Headers;mule_headers;/"
         "${CMAKE_CURRENT_BINARY_DIR};Mule Libraries;mule_libraries;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Tulpar Headers;tulpar_headers;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Tulpar Libraries;tulpar_libraries;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Tulpar Extra;tulpar_extra;/"
         "${CMAKE_CURRENT_BINARY_DIR};Unicorn Data;unicorn_data;/"
         "${CMAKE_CURRENT_BINARY_DIR};Unicorn Headers;unicorn_headers;/"
         "${CMAKE_CURRENT_BINARY_DIR};Unicorn Extra;unicorn_extra;/"
@@ -220,6 +239,10 @@ set(CPACK_COMPONENTS_ALL
     mule_headers
     mule_libraries
 
+    tulpar_headers
+    tulpar_extra
+    tulpar_libraries
+
     unicorn_data
     unicorn_headers
     unicorn_extra
@@ -263,6 +286,26 @@ cpack_add_component(mule_headers
     DESCRIPTION "Headers for Mule Utilities library. Depends on Mule Library."
     GROUP "Development"
     DEPENDS mule_libraries
+)
+
+cpack_add_component(tulpar_libraries
+    DISPLAY_NAME "Tulpar Library"
+    DESCRIPTION "Tulpar Audio library. Depends on Mule Library."
+    GROUP "Runtime"
+    DEPENDS mule_libraries
+)
+
+cpack_add_component(tulpar_headers
+    DISPLAY_NAME "Tulpar Headers"
+    DESCRIPTION "Headers for Tulpar Audio library. Depends on Tulpar Library, Tulpar Extra and Mule Headers."
+    GROUP "Development"
+    DEPENDS tulpar_libraries tulpar_extra mule_headers
+)
+
+cpack_add_component(tulpar_extra
+    DISPLAY_NAME "Tulpar Extra"
+    DESCRIPTION "All needed third-party headers and libraries for Tulpar Components"
+    GROUP "Development"
 )
 
 cpack_add_component(unicorn_data
@@ -354,10 +397,14 @@ include(CPack)
 
 # Perform install of needed components
 add_custom_target( mock_install
-    DEPENDS ${MULE_UTILITIES_LIB} ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
+    DEPENDS ${MULE_UTILITIES_LIB} ${TULPAR_AUDIO_LIB} ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
 
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=tulpar_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=tulpar_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=tulpar_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_data -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=unicorn_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
