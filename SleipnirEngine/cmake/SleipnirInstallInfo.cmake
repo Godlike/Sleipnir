@@ -1,0 +1,35 @@
+# Copyright (C) 2018 by Godlike
+# This code is licensed under the MIT license (MIT)
+# (http://opensource.org/licenses/MIT)
+
+if (NOT DEFINED INSTALL_INCLUDE_DIR)
+    set(INSTALL_INCLUDE_DIR "include/godlike" CACHE STRING "Path to directory holding headers")
+endif()
+
+if (NOT DEFINED INSTALL_LIBRARY_DIR)
+    set(INSTALL_LIBRARY_DIR "lib" CACHE STRING "Path to directory holding libraries")
+endif()
+
+if (NOT DEFINED INSTALL_DATA_DIR)
+    set(INSTALL_DATA_DIR "share" CACHE STRING "Path to directory holding additional data")
+endif()
+
+set(SLEIPNIR_INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIR})
+set(SLEIPNIR_INSTALL_LIBRARY_DIR ${INSTALL_LIBRARY_DIR}/${SLEIPNIR_ENGINE_NAME})
+set(SLEIPNIR_INSTALL_DATA_DIR ${INSTALL_DATA_DIR}/${SLEIPNIR_ENGINE_NAME})
+
+set(SLEIPNIR_VENDOR "Godlike")
+set(SLEIPNIR_MAINTAINER ${SLEIPNIR_VENDOR})
+set(SLEIPNIR_DESCRIPTION "Yet another game engine")
+set(SLEIPNIR_INSTALL_DIRECTORY "Godlike")
+set(SLEIPNIR_COMMENT "")
+set(SLEIPNIR_COPYRIGHT "Copyright (C) 2018 by Godlike")
+set(SLEIPNIR_LEGAL_TM "Distributed under the MIT license (http://opensource.org/licenses/MIT)")
+
+set(SLEIPNIR_VERSION_MAJOR 0)
+set(SLEIPNIR_VERSION_MINOR 1)
+set(SLEIPNIR_VERSION_PATCH 0)
+set(SLEIPNIR_VERSION_TWEAK 0)
+
+set(SLEIPNIR_VERSION "${SLEIPNIR_VERSION_MAJOR}.${SLEIPNIR_VERSION_MINOR}.${SLEIPNIR_VERSION_PATCH}")
+set(SLEIPNIR_SOVERSION "${SLEIPNIR_VERSION_MAJOR}.${SLEIPNIR_VERSION_MINOR}")

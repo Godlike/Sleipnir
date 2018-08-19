@@ -1,0 +1,39 @@
+/*
+* Copyright (C) 2018 by Godlike
+* This code is licensed under the MIT license (MIT)
+* (http://opensource.org/licenses/MIT)
+*/
+
+#ifndef SLEIPNIR_SYSTEM_SKELETON_IMP
+#define SLEIPNIR_SYSTEM_SKELETON_IMP
+
+#include <sleipnir/system/Skeleton.hpp>
+
+namespace sleipnir
+{
+namespace system
+{
+
+template<class... Comps>
+    Skeleton<Comps...>::Skeleton(entity::World& world)
+        : ISystem(), m_world(world)
+{
+    m_query.Set<Comps...>();
+}
+
+template<class... Comps>
+    Skeleton<Comps...>::~Skeleton()
+{
+
+}
+
+template<class... Comps>
+    entity::World::Entities Skeleton<Comps...>::GetEntities()
+{
+    return m_world.MatchEntities(m_query);
+}
+
+}
+}
+
+#endif // SLEIPNIR_SYSTEM_SKELETON_HPP

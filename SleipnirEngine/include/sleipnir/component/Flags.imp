@@ -1,0 +1,55 @@
+/*
+* Copyright (C) 2018 by Godlike
+* This code is licensed under the MIT license (MIT)
+* (http://opensource.org/licenses/MIT)
+*/
+
+#ifndef SLEIPNIR_COMPONENT_FLAGS_IMP
+#define SLEIPNIR_COMPONENT_FLAGS_IMP
+
+#include <sleipnir/component/Flags.hpp>
+
+#include <sleipnir/util/Types.hpp>
+
+namespace sleipnir
+{
+namespace component
+{
+
+template<class Comp, class... Comps>
+    inline void Flags::Set()
+{
+    Set(Component::GetId<Comp>());
+
+    Set<Comps...>();
+}
+
+template<>
+    inline void Flags::Set() {}
+
+template<class Comp, class... Comps>
+    inline bool Flags::Test()
+{
+    return Test(Component::GetId<Comp>()) && Test<Comps...>();
+}
+
+template<>
+    inline bool Flags::Test() { return true; }
+
+template<class Comp, class... Comps>
+    inline void Flags::Reset()
+{
+    Reset(Component::GetId<Comp>());
+
+    Reset<Comps...>();
+}
+
+template<>
+    inline void Flags::Reset() {}
+
+}
+}
+
+#include <sleipnir/component/Flags.imp>
+
+#endif // SLEIPNIR_COMPONENT_FLAGS_IMP

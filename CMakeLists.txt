@@ -32,36 +32,23 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../MuleUtilities:$ORIGIN/../EponaMath:$ORIGIN/../ArionCollision")
 set(CMAKE_DEBUG_POSTFIX "")
 
-# Prepare install information
+# Sleipnir Engine
 message("===============================")
 message("== Preparing Sleipnir Engine ==")
 message("===============================")
 
 set(SLEIPNIR_NAME ${PROJECT_NAME})
-set(SLEIPNIR_VENDOR "Godlike")
-set(SLEIPNIR_MAINTAINER ${SLEIPNIR_VENDOR})
-set(SLEIPNIR_DESCRIPTION "Yet another game engine")
-set(SLEIPNIR_INSTALL_DIRECTORY "Godlike")
 
-set(SLEIPNIR_VERSION_MAJOR 0)
-set(SLEIPNIR_VERSION_MINOR 1)
-set(SLEIPNIR_VERSION_PATCH 0)
-set(SLEIPNIR_VERSION_TWEAK 0)
+include(SleipnirEngineConfig)
+include(SleipnirInstallInfo)
 
-set(SLEIPNIR_VERSION "${SLEIPNIR_VERSION_MAJOR}.${SLEIPNIR_VERSION_MINOR}.${SLEIPNIR_VERSION_PATCH}")
+message(STATUS "${PROJECT_NAME} ${SLEIPNIR_VERSION} ${CMAKE_BUILD_TYPE} configuration:")
+message(STATUS "-- SLEIPNIR_BUILD_DOCUMENTATION: ${SLEIPNIR_BUILD_DOCUMENTATION}")
+message(STATUS "-- SLEIPNIR_BUILD_DEMOS: ${SLEIPNIR_BUILD_DEMOS}")
+message(STATUS "-- SLEIPNIR_BUILD_TESTS: ${SLEIPNIR_BUILD_TESTS}")
+message(STATUS "-- SLEIPNIR_SHLIBDEPS: ${SLEIPNIR_SHLIBDEPS}")
 
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-if (UNIX)
-    message(STATUS "SLEIPNIR_SHLIBDEPS: ${SLEIPNIR_SHLIBDEPS}")
-endif()
-message(STATUS "Version: ${SLEIPNIR_VERSION}")
-
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.in
-    ${CMAKE_CURRENT_BINARY_DIR}/version
-
-    @ONLY
-)
+add_subdirectory(${SLEIPNIR_ENGINE_ROOT})
 
 # Mule
 message("======================================")
@@ -167,6 +154,7 @@ if (UNIX)
     set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS ON)
 
     set(CPACK_INSTALL_CMAKE_PROJECTS
+        "${CMAKE_CURRENT_BINARY_DIR};Sleipnir Headers;sleipnir_headers;/"
         "${CMAKE_CURRENT_BINARY_DIR};Mule Headers;mule_headers;/"
         "${CMAKE_CURRENT_BINARY_DIR};Mule Libraries;mule_libraries;/"
         "${CMAKE_CURRENT_BINARY_DIR};Tulpar Headers;tulpar_headers;/"
@@ -236,6 +224,8 @@ set(CPACK_GENERATOR ${SLEIPNIR_GENERATOR})
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
 set(CPACK_COMPONENTS_ALL
+    sleipnir_headers
+
     mule_headers
     mule_libraries
 
@@ -274,6 +264,12 @@ cpack_add_component_group(development
 )
 
 # CPack components
+
+cpack_add_component(sleipnir_headers
+    DISPLAY_NAME "Sleipnir Headers"
+    DESCRIPTION "Headers for Sleipnir Engine library"
+    GROUP "Development"
+)
 
 cpack_add_component(mule_libraries
     DISPLAY_NAME "Mule Library"
@@ -397,7 +393,9 @@ include(CPack)
 
 # Perform install of needed components
 add_custom_target( mock_install
-    DEPENDS ${MULE_UTILITIES_LIB} ${TULPAR_AUDIO_LIB} ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
+    DEPENDS ${SLEIPNIR_ENGINE_LIB} ${MULE_UTILITIES_LIB} ${TULPAR_AUDIO_LIB} ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
+
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=sleipnir_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
