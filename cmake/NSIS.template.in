@@ -842,6 +842,10 @@ Section "-Core installation"
     WriteRegStr HKLM "Software\Kitware\CMake\Packages\${PEGASUS_PHYSICS_LIB}" "package_path" "$INSTDIR\lib\${PEGASUS_PHYSICS_LIB}"
   ${EndIf}
 
+  ${If} ${SectionIsSelected} ${tulpar_headers}
+    WriteRegStr HKLM "Software\Kitware\CMake\Packages\${TULPAR_AUDIO_LIB}" "package_path" "$INSTDIR\lib\${TULPAR_AUDIO_LIB}"
+  ${EndIf}
+
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   Push "DisplayName"
@@ -943,6 +947,10 @@ Section "-Add to path"
 
     Push "PATH"
     Push $INSTDIR\lib\${PEGASUS_PHYSICS_LIB}
+    Call AddToEnvVar
+
+    Push "PATH"
+    Push $INSTDIR\lib\${TULPAR_AUDIO_LIB}
     Call AddToEnvVar
   doNotAddToPath:
 SectionEnd
@@ -1105,6 +1113,7 @@ Section "Uninstall"
   DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${EPONA_MATH_LIB}"
   DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${ARION_COLLISION_LIB}"
   DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${PEGASUS_PHYSICS_LIB}"
+  DeleteRegKey HKLM "Software\Kitware\CMake\Packages\${TULPAR_AUDIO_LIB}"
 
   StrCmp $DO_NOT_ADD_TO_PATH_ "1" doNotRemoveFromPath 0
     Push "PATH"
@@ -1125,6 +1134,10 @@ Section "Uninstall"
 
     Push "PATH"
     Push $INSTDIR\lib\${PEGASUS_PHYSICS_LIB}
+    Call un.RemoveFromEnvVar
+
+    Push "PATH"
+    Push $INSTDIR\lib\${TULPAR_AUDIO_LIB}
     Call un.RemoveFromEnvVar
   doNotRemoveFromPath:
 SectionEnd
