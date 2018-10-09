@@ -9,8 +9,8 @@
 
 #include <sleipnir/component/Flags.hpp>
 
-#include <sleipnir/util/Config.hpp>
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Config.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 #include <array>
 #include <queue>
@@ -33,7 +33,7 @@ public:
 
     /** @brief  Creates entity pool
      *
-     *  Allocates enough space to hold `util::Config::InitialEntityCount` numbber of entities
+     *  Allocates enough space to hold `utility::Config::InitialEntityCount` numbber of entities
      */
     EntityPool();
     ~EntityPool() = default;
@@ -128,7 +128,7 @@ public:
 
 private:
     //! Shortcut to array of components
-    typedef std::array<ComponentPtr, util::Config::MaxComponentCount> ComponentArray;
+    typedef std::array<ComponentPtr, utility::Config::MaxComponentCount> ComponentArray;
 
     /** @brief  Checks if buffers can fit given number of elements and expands if not
      *

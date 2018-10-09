@@ -7,7 +7,7 @@
 #ifndef SLEIPNIR_COMPONENT_DUMMY_COMPONENT_HPP
 #define SLEIPNIR_COMPONENT_DUMMY_COMPONENT_HPP
 
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 namespace sleipnir
 {

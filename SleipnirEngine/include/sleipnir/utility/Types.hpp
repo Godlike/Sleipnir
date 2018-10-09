@@ -7,7 +7,7 @@
 #ifndef SLEIPNIR_UTIL_TYPES_HPP
 #define SLEIPNIR_UTIL_TYPES_HPP
 
-#include <sleipnir/util/TemplateCounter.hpp>
+#include <sleipnir/utility/TemplateCounter.hpp>
 
 #include <cstdint>
 #include <limits>
@@ -34,7 +34,7 @@ struct Component
     {
         static_assert(true == std::is_base_of<Component, C>::value, "C shall be derived from Component");
 
-        return util::TemplateCounter<Component>::GetId<C>();
+        return utility::TemplateCounter<Component>::GetId<C>();
     }
 };
 

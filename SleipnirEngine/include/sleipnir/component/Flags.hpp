@@ -7,7 +7,7 @@
 #ifndef SLEIPNIR_COMPONENT_FLAGS_HPP
 #define SLEIPNIR_COMPONENT_FLAGS_HPP
 
-#include <sleipnir/util/Config.hpp>
+#include <sleipnir/utility/Config.hpp>
 
 #include <bitset>
 
@@ -111,7 +111,7 @@ public:
 
 private:
     //! Holds flags for components
-    std::bitset<util::Config::MaxComponentCount> m_flags;
+    std::bitset<utility::Config::MaxComponentCount> m_flags;
 };
 
 }

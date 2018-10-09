@@ -6,9 +6,9 @@ cmake_minimum_required(VERSION 3.0)
 
 project(Sleipnir)
 
-option(SLEIPNIR_BUILD_DOCUMENTATION "Build documentation" OFF)
+option(SLEIPNIR_BUILD_DOCUMENTATION "Build Sleipnir documentation" OFF)
 option(SLEIPNIR_BUILD_DEMOS "Build demo projects" OFF)
-option(SLEIPNIR_BUILD_TESTS "Build tests" OFF)
+option(SLEIPNIR_BUILD_TESTS "Build Sleipnir tests" ON)
 option(SLEIPNIR_SHLIBDEPS "Calculate shared library dependencies (for .deb only)" ON)
 
 # Setup output folders if none were specified
@@ -41,12 +41,6 @@ set(SLEIPNIR_NAME ${PROJECT_NAME})
 
 include(SleipnirEngineConfig)
 include(SleipnirInstallInfo)
-
-message(STATUS "${PROJECT_NAME} ${SLEIPNIR_VERSION} ${CMAKE_BUILD_TYPE} configuration:")
-message(STATUS "-- SLEIPNIR_BUILD_DOCUMENTATION: ${SLEIPNIR_BUILD_DOCUMENTATION}")
-message(STATUS "-- SLEIPNIR_BUILD_DEMOS: ${SLEIPNIR_BUILD_DEMOS}")
-message(STATUS "-- SLEIPNIR_BUILD_TESTS: ${SLEIPNIR_BUILD_TESTS}")
-message(STATUS "-- SLEIPNIR_SHLIBDEPS: ${SLEIPNIR_SHLIBDEPS}")
 
 add_subdirectory(${SLEIPNIR_ENGINE_ROOT})
 
@@ -137,6 +131,8 @@ add_subdirectory(${TULPAR_ROOT})
 message("=====================================")
 message("== Preparing packaging information ==")
 message("=====================================")
+
+message(STATUS "-- SLEIPNIR_SHLIBDEPS: ${SLEIPNIR_SHLIBDEPS}")
 
 set(HAS_NSIS FALSE)
 

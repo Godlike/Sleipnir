@@ -4,9 +4,9 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#include "system/physics/Physics.hpp"
+#include <sleipnir/system/physics/Physics.hpp>
 
-namespace xanthus
+namespace sleipnir
 {
 namespace system
 {
@@ -29,9 +29,9 @@ Physics::~Physics()
     m_physicsThread.Join();
 }
 
-void Physics::Init()
+void Physics::Initialize()
 {
-    m_physicsThread.Init();
+    m_physicsThread.Initialize();
     m_physicsThread.Run();
 }
 

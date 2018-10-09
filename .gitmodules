@@ -16,3 +16,6 @@
 [submodule "godlike/Mule"]
 	path = godlike/Mule
 	url = https://github.com/Godlike/Mule.git
+[submodule "third_party/Catch2"]
+	path = third_party/Catch2
+	url = https://github.com/catchorg/Catch2

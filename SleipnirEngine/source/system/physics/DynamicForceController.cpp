@@ -4,9 +4,9 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#include "system/physics/DynamicForceController.hpp"
+#include <sleipnir/system/physics/DynamicForceController.hpp>
 
-namespace xanthus
+namespace sleipnir
 {
 namespace system
 {

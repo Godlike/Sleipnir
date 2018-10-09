@@ -4,14 +4,14 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#ifndef SLEIPNIR_UTIL_TEMPLATE_COUNTER_HPP
-#define SLEIPNIR_UTIL_TEMPLATE_COUNTER_HPP
+#ifndef SLEIPNIR_UTILITY_TEMPLATE_COUNTER_HPP
+#define SLEIPNIR_UTILITY_TEMPLATE_COUNTER_HPP
 
 #include <cstddef>
 
 namespace sleipnir
 {
-namespace util
+namespace utility
 {
 
 /** @brief  Static template counter
@@ -50,4 +50,4 @@ template<typename CounterName>
 }
 }
 
-#endif // SLEIPNIR_UTIL_TEMPLATE_COUNTER_HPP
+#endif // SLEIPNIR_UTILITY_TEMPLATE_COUNTER_HPP

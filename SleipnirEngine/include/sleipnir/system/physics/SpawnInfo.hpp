@@ -9,7 +9,7 @@
 
 #include <sleipnir/WorldTime.hpp>
 
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 #include <Arion/Shape.hpp>
 
@@ -34,9 +34,6 @@ struct SpawnInfo
 
     //! Damping
     double damping;
-
-    //! Static force that body should be bound to
-    Force force;
 };
 
 }

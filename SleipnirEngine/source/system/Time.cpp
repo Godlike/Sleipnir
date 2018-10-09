@@ -6,7 +6,7 @@
 
 #include <sleipnir/system/Time.hpp>
 
-#include <sleipnir/util/Config.hpp>
+#include <sleipnir/utility/Config.hpp>
 
 #include <iostream>
 
@@ -36,7 +36,7 @@ Time::TimeUnit Time::Update(TimeUnit realDuration)
     TimeUnit const worldNow = m_worldTime.GetTime();
     TimeUnit const physNow = m_physicsSystem.GetCurrentTime();
 
-    if ((worldNow - physNow) > util::Config::PhysicsTick)
+    if ((worldNow - physNow) > utility::Config::PhysicsTick)
     {
         m_worldDuration = TimeUnit(0);
         std::cerr << "[Time] Physics are lagging behind "

@@ -6,8 +6,10 @@
 
 #include <sleipnir/system/physics/PhysicsThread.hpp>
 
-#include <sleipnir/util/Config.hpp>
-#include <sleipnir/util/ScopeProfiler.hpp>
+#include <sleipnir/InternalLoggers.hpp>
+#include <sleipnir/utility/Config.hpp>
+
+#include <mule/ScopeProfiler.hpp>
 
 #include <limits>
 
@@ -39,7 +41,7 @@ PhysicsThread::~PhysicsThread()
 
 void PhysicsThread::Initialize()
 {
-    m_physicsEngine.Init();
+    m_physicsEngine.Initialize();
 }
 
 void PhysicsThread::Run()
@@ -136,11 +138,11 @@ void PhysicsThread::Routine()
     {
         target = m_timeControl.worldTime.GetTime();
 
-        for (TimeControl::TimeUnit future = (m_timeControl.currentTime + util::Config::PhysicsTick); future < target; future += util::Config::PhysicsTick)
+        for (TimeControl::TimeUnit future = (m_timeControl.currentTime + utility::Config::PhysicsTick); future < target; future += utility::Config::PhysicsTick)
         {
             {
-                util::ScopeProfiler profiler("pegasus");
-                m_physicsEngine.Run(util::Config::PhysicsTick);
+                mule::ScopeProfiler profiler(LOG_PROFILE, "pegasus");
+                m_physicsEngine.Run(utility::Config::PhysicsTick);
             }
 
             m_timeControl.currentTime = future;

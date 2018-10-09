@@ -4,21 +4,21 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#include "entity/EntityPool.hpp"
+#include <sleipnir/entity/EntityPool.hpp>
 
 #include <cassert>
 
-namespace xanthus
+namespace sleipnir
 {
 namespace entity
 {
 
 EntityPool::EntityPool()
 {
-    m_entityComponents.resize(util::Config::InitialEntityCount);
-    m_entityComponentFlags.resize(util::Config::InitialEntityCount);
+    m_entityComponents.resize(utility::Config::InitialEntityCount);
+    m_entityComponentFlags.resize(utility::Config::InitialEntityCount);
 
-    m_entities.reserve(util::Config::InitialEntityCount);
+    m_entities.reserve(utility::Config::InitialEntityCount);
 }
 
 EntityId EntityPool::CreateEntity()
@@ -117,7 +117,7 @@ void EntityPool::EntityAddComponent(EntityId entityId
 {
     assert(m_entities.size() >= entityId);
     assert(InvalidEntityId != m_entities[entityId]);
-    assert(util::Config::MaxComponentCount > componentId);
+    assert(utility::Config::MaxComponentCount > componentId);
 
     m_entityComponents[entityId][componentId].reset(pComponent);
     m_entityComponentFlags[entityId].Set(componentId);
@@ -127,7 +127,7 @@ Component& EntityPool::EntityGetComponent(EntityId entityId, std::size_t compone
 {
     assert(m_entities.size() >= entityId);
     assert(InvalidEntityId != m_entities[entityId]);
-    assert(util::Config::MaxComponentCount > componentId);
+    assert(utility::Config::MaxComponentCount > componentId);
 
     return *m_entityComponents[entityId][componentId];
 }
@@ -136,7 +136,7 @@ bool EntityPool::EntityHasComponent(EntityId entityId, std::size_t componentId) 
 {
     assert(m_entities.size() >= entityId);
     assert(InvalidEntityId != m_entities[entityId]);
-    assert(util::Config::MaxComponentCount > componentId);
+    assert(utility::Config::MaxComponentCount > componentId);
 
     return m_entityComponentFlags[entityId].Test(componentId);
 }
@@ -145,7 +145,7 @@ void EntityPool::EntityDeleteComponent(EntityId entityId, std::size_t componentI
 {
     assert(m_entities.size() >= entityId);
     assert(InvalidEntityId != m_entities[entityId]);
-    assert(util::Config::MaxComponentCount > componentId);
+    assert(utility::Config::MaxComponentCount > componentId);
 
     m_entityComponents[entityId][componentId].reset(nullptr);
     m_entityComponentFlags[entityId].Reset(componentId);

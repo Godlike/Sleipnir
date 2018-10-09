@@ -11,7 +11,7 @@
 
 #include <sleipnir/entity/Entity.hpp>
 
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 #include <wink/signal.hpp>
 

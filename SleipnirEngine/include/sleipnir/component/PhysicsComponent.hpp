@@ -9,7 +9,7 @@
 
 #include <sleipnir/system/physics/PhysicsThread.hpp>
 
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 namespace sleipnir
 {

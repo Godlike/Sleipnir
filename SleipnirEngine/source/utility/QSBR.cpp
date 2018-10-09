@@ -4,14 +4,14 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#include <sleipnir/util/QSBR.hpp>
+#include <sleipnir/utility/QSBR.hpp>
 
 #include <limits>
 #include <cassert>
 
 namespace sleipnir
 {
-namespace util
+namespace utility
 {
 
 static constexpr SectionIndex MaxSectionIndex = std::numeric_limits<SectionIndex>::max();

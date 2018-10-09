@@ -104,20 +104,9 @@ public:
     std::size_t primitiveCount;
 
 private:
-    //! Shortcut to a collection of static forces
-    using Forces = std::vector<std::unique_ptr<pegasus::scene::Force<pegasus::force::StaticField>>>;
-
-    //! Shortcut to a collection of gravity sources
-    using GravitySourceMap = std::unordered_map<uint32_t, std::unique_ptr<pegasus::scene::Force<pegasus::force::SquareDistanceSource>>>;
-
     //! Pegasus world
     pegasus::scene::Scene m_scene;
 
-    //! Collection of static forces
-    Forces m_staticForces;
-
-    //! Collection of gravity sources
-    GravitySourceMap m_dynamicForces;
 };
 
 }

@@ -9,7 +9,7 @@
 
 #include <sleipnir/WorldTime.hpp>
 
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 #include <chrono>
 

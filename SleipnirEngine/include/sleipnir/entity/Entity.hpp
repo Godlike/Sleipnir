@@ -7,7 +7,7 @@
 #ifndef SLEIPNIR_ENTITY_ENTITY_HPP
 #define SLEIPNIR_ENTITY_ENTITY_HPP
 
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 namespace sleipnir
 {

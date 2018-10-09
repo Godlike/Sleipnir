@@ -7,7 +7,7 @@
 #ifndef SLEIPNIR_COMPONENT_RENDER_COMPONENT_HPP
 #define SLEIPNIR_COMPONENT_RENDER_COMPONENT_HPP
 
-#include <sleipnir/util/Types.hpp>
+#include <sleipnir/utility/Types.hpp>
 
 #include <unicorn/video/Mesh.hpp>
 #include <unicorn/video/Material.hpp>

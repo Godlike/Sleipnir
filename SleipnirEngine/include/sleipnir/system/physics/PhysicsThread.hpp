@@ -15,7 +15,7 @@
 #include <sleipnir/system/physics/PegasusAdapter.hpp>
 #include <sleipnir/system/physics/SpawnInfo.hpp>
 
-#include <sleipnir/util/QSBR.hpp>
+#include <sleipnir/utility/QSBR.hpp>
 
 #include <atomic>
 #include <thread>
@@ -39,7 +39,7 @@ public:
     using BodyPositions = std::unordered_map<pegasus::scene::Handle, glm::dvec3>;
 
     //! QSBR section id for @ref memoryReclaimer
-    using SectionIndex = util::QSBR::SectionIndex;
+    using SectionIndex = utility::QSBR::SectionIndex;
 
     /** @brief  Basic constructor
      *
@@ -117,7 +117,7 @@ public:
     WorldTime::TimeUnit GetCurrentTime() const;
 
     //! QSBR memory reclaimer controlling @ref BodyPositions
-    util::QSBR memoryReclaimer;
+    utility::QSBR memoryReclaimer;
 
 private:
     //! Structure holding time information

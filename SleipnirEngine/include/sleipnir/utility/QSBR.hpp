@@ -4,8 +4,8 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#ifndef SLEIPNIR_UTIL_QSBR_HPP
-#define SLEIPNIR_UTIL_QSBR_HPP
+#ifndef SLEIPNIR_UTILITY_QSBR_HPP
+#define SLEIPNIR_UTILITY_QSBR_HPP
 
 #include <cstdint>
 #include <functional>
@@ -14,7 +14,7 @@
 
 namespace sleipnir
 {
-namespace util
+namespace utility
 {
 
 /** @brief  Quiescent state based reclamation implementation
@@ -126,4 +126,4 @@ private:
 }
 }
 
-#endif // SLEIPNIR_UTIL_QSBR_HPP
+#endif // SLEIPNIR_UTILITY_QSBR_HPP

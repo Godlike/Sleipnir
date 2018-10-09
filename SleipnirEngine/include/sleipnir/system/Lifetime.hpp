@@ -15,6 +15,8 @@
 
 #include <sleipnir/system/Skeleton.hpp>
 
+#include <functional>
+
 namespace sleipnir
 {
 
@@ -26,7 +28,7 @@ class Lifetime : public Skeleton<component::LifetimeComponent>
 {
 public:
     //! Shortcut to user's entity reclaiming callback
-    using EntityReclaimer = std::function<void(const Entity&)>;
+    using EntityReclaimer = std::function<void(const entity::Entity&)>;
 
     /** @brief  Basic constructor
      *
