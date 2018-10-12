@@ -6,12 +6,12 @@
 
 #include "Application.hpp"
 
-#include <unicorn/Settings.hpp>
+#include <unicorn/utility/Settings.hpp>
 #include <unicorn/UnicornRender.hpp>
 
 int main(int argc, char* argv[])
 {
-    unicorn::Settings& settings = unicorn::Settings::Instance();
+    unicorn::utility::Settings& settings = unicorn::utility::Settings::Instance();
 
     settings.Init(argc, argv, "sleipnir.log");
     settings.SetApplicationName("Sleipnir Example");
@@ -28,5 +28,5 @@ int main(int argc, char* argv[])
     unicornRender->Deinit();
     delete unicornRender;
 
-    unicorn::Settings::Destroy();
+    unicorn::utility::Settings::Destroy();
 }

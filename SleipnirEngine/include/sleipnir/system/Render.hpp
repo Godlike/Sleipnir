@@ -15,7 +15,7 @@
 
 #include <sleipnir/system/Skeleton.hpp>
 
-#include <unicorn/Settings.hpp>
+#include <unicorn/utility/Settings.hpp>
 #include <unicorn/UnicornRender.hpp>
 
 #include <unicorn/video/Camera.hpp>
@@ -57,7 +57,7 @@ public:
      *  @param  settings    unicorn settings
      *  @param  render      rendering subsystem
      */
-    void Initialize(unicorn::Settings& settings, unicorn::UnicornRender& render);
+    void Initialize(unicorn::utility::Settings& settings, unicorn::UnicornRender& render);
 
     /** @brief  Method invoked each loop cycle
      *

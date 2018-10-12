@@ -14,7 +14,7 @@ namespace sleipnir
 namespace utility
 {
 
-static constexpr SectionIndex MaxSectionIndex = std::numeric_limits<SectionIndex>::max();
+static constexpr QSBR::SectionIndex MaxSectionIndex = std::numeric_limits<QSBR::SectionIndex>::max();
 
 QSBR::QSBR()
     : m_remainingSections(0)

@@ -39,7 +39,7 @@ Render::~Render()
     }
 }
 
-void Render::Initialize(unicorn::Settings& settings, unicorn::UnicornRender& render)
+void Render::Initialize(unicorn::utility::Settings& settings, unicorn::UnicornRender& render)
 {
     unicorn::video::Graphics* pGraphics = render.GetGraphics();
 

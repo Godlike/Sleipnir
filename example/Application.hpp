@@ -1,7 +1,7 @@
 #ifndef SLEIPNIR_APPLICATION_HPP
 #define SLEIPNIR_APPLICATION_HPP
 
-#include <unicorn/Settings.hpp>
+#include <unicorn/utility/Settings.hpp>
 #include <unicorn/UnicornRender.hpp>
 
 #include <unicorn/system/Timer.hpp>
@@ -21,7 +21,7 @@
 class Application
 {
 public:
-    Application(unicorn::Settings& settings
+    Application(unicorn::utility::Settings& settings
         , unicorn::UnicornRender* pRender);
     ~Application();
 
