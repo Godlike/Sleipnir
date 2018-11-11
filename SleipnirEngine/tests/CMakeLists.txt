@@ -46,6 +46,10 @@ function(sleipnir_add_test)
         ${sleipnir_add_test_SOURCE}
     )
 
+    target_link_libraries(${EXEC_NAME}
+        Sleipnir::Engine
+    )
+
     add_test(
         NAME ${sleipnir_add_test_NAME}
         COMMAND ${EXEC_NAME} ${sleipnir_add_test_ARGS}

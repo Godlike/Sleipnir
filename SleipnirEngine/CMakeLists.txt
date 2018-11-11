@@ -39,6 +39,11 @@ endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+set(TARGET_FOLDER_ROOT "sleipnir")
+
+add_subdirectory(ecs)
+add_subdirectory(utility)
+
 if (SLEIPNIR_BUILD_TESTS)
     enable_testing()
     include(CTest)
@@ -46,44 +51,51 @@ if (SLEIPNIR_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-set(SLEIPNIR_ENTITY_SOURCES
-    source/entity/Entity.cpp
-    source/entity/EntityPool.cpp
-    source/entity/World.cpp
-)
-
-set(SLEIPNIR_SYSTEM_SOURCES
-    source/system/physics/BodyController.cpp
-    source/system/physics/DynamicForceController.cpp
-    source/system/physics/PegasusAdapter.cpp
-    source/system/physics/Physics.cpp
-    source/system/physics/PhysicsThread.cpp
-
-    source/system/Lifetime.cpp
-    source/system/Render.cpp
-    source/system/Time.cpp
-    source/system/Timer.cpp
-)
-
-set(SLEIPNIR_UTILITY_SOURCES
-    source/utility/QSBR.cpp
+set(SLEIPNIR_COMMON_SOURCES
+    source/Loggers.cpp
+    source/SleipnirEngine.cpp
 )
 
 target_sources(${PROJECT_NAME}
     PRIVATE
-        ${SLEIPNIR_ENTITY_SOURCES}
-        ${SLEIPNIR_SYSTEM_SOURCES}
-        ${SLEIPNIR_UTILITY_SOURCES}
+        ${SLEIPNIR_COMMON_SOURCES}
 )
 
 target_include_directories(${PROJECT_NAME}
-    PUBLIC PRIVATE
+    PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${SLEIPNIR_INSTALL_INCLUDE_DIR}>
 )
 
 target_link_libraries(${PROJECT_NAME}
-    Pegasus::Physics
-    Unicorn::Render
+    Sleipnir::Engine::ECS
+    Sleipnir::Engine::Utility
     Mule::Utilities
+)
+
+include(SleipnirInstallInfo)
+
+install( TARGETS ${PROJECT_NAME}
+    COMPONENT sleipnir_libraries
+    RUNTIME DESTINATION ${SLEIPNIR_INSTALL_LIBRARY_DIR}
+    LIBRARY DESTINATION ${SLEIPNIR_INSTALL_LIBRARY_DIR}
+    ARCHIVE DESTINATION ${SLEIPNIR_INSTALL_LIBRARY_DIR}
+)
+
+install( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
+    DESTINATION ${SLEIPNIR_INSTALL_INCLUDE_DIR}
+    COMPONENT sleipnir_headers
+    FILES_MATCHING
+        PATTERN "*.hpp"
+            PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+        PATTERN "*.imp"
+            PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)
+
+if (UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
+
+set_target_properties(${PROJECT_NAME}
+    PROPERTIES FOLDER "${TARGET_FOLDER_ROOT}"
 )

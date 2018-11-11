@@ -1,0 +1,125 @@
+/*
+* Copyright (C) 2018 by Godlike
+* This code is licensed under the MIT license (MIT)
+* (http://opensource.org/licenses/MIT)
+*/
+
+#ifndef SLEIPNIR_ECS_COMPONENT_FLAGS_HPP
+#define SLEIPNIR_ECS_COMPONENT_FLAGS_HPP
+
+#include <sleipnir/utility/Config.hpp>
+
+#include <bitset>
+
+namespace sleipnir
+{
+namespace ecs
+{
+namespace component
+{
+
+/** @brief  Helper class working with component flags */
+class Flags
+{
+public:
+    Flags() = default;
+
+    Flags(Flags const& other) = default;
+    Flags& operator=(Flags const& other) = default;
+
+    Flags(Flags&& other) = default;
+    Flags& operator=(Flags&& other) = default;
+
+    ~Flags() = default;
+
+    /** @brief  Checks if flag sets are the same */
+    bool operator==(Flags const& other) const { return m_flags == other.m_flags; }
+
+    /** @brief  Checks if flags sets are different */
+    bool operator!=(Flags const& other) const { return !operator==(other); }
+
+    /** @brief  Checks if all flags are set */
+    bool All() const { return m_flags.all(); }
+
+    /** @brief  Checks if any flag is set */
+    bool Any() const { return m_flags.any(); }
+
+    /** @brief  Checks if no flags are set */
+    bool None() const { return m_flags.none(); }
+
+    /** @brief  Resets all flags */
+    void Clear() { m_flags.reset(); }
+
+    /** @brief  Checks if all set flags from @p this are set in @p other
+     *
+     *  @param  other   rhs
+     *
+     *  @return @c true if all set flags in @p m_flags are set in @p other, @c false otherwise
+     */
+    bool IsSubset(Flags const& other) const { return (m_flags & other.m_flags) == m_flags; }
+
+    /** @brief  Checks if there is intersection of flags with @p other
+     *
+     *  @param  other   rhs
+     *
+     *  @return @c true if there is a non-empty intersection in set flags with @p other,
+     *          @c false otherwise
+     */
+    bool Intersects(Flags const& other) const
+    {
+        return (m_flags & other.m_flags).any();
+    }
+
+    /** @brief  Sets flag for given id
+     *
+     *  @param  componentId flag id to set
+     */
+    void Set(std::size_t componentId) { m_flags.set(componentId); }
+
+    /** @brief  Checks if flag is set for given id */
+    bool Test(std::size_t componentId) const { return m_flags.test(componentId); }
+
+    /** @brief  Resets flag for given id
+     *
+     *  @param  componentId flag id to reset
+     */
+    void Reset(std::size_t componentId) { m_flags.reset(componentId); }
+
+    /** @brief  Sets flags for given components
+     *
+     *  @tparam Comp    component to gather id from
+     *  @tparam Comps   additional components
+     */
+    template<class Comp = void, class... Comps>
+        void Set();
+
+    /** @brief  Checks if all flags are set for given components
+     *
+     *  @tparam Comp    component
+     *  @tparam Comps   additional components
+     *
+     *  @return @c true if all flags for given components are set, @c false otherwise
+     */
+    template<class Comp = void, class... Comps>
+        bool Test();
+
+    /** @brief  Resets flags for given components
+     *
+     *  @tparam Comp    component
+     *  @tparam Comps   additional components
+     */
+    template<class Comp = void, class... Comps>
+        void Reset();
+
+private:
+    //! Holds flags for components
+    std::bitset<utility::Config::MaxComponentCount> m_flags;
+};
+
+} // namespace component
+} // namespace ecs
+} // namespace sleipnir
+
+#include <sleipnir/ecs/component/Flags.imp>
+
+#endif // SLEIPNIR_ECS_COMPONENT_FLAGS_HPP

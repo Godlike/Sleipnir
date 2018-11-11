@@ -29,8 +29,13 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "Flag indicating if we want to build shared 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../MuleUtilities:$ORIGIN/../EponaMath:$ORIGIN/../ArionCollision")
+list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN/../ArionCollision:$ORIGIN/../EponaMath:$ORIGIN/../MuleUtilities:$ORIGIN/../PegasusPhysics:$ORIGIN/../SleipnirEngine:$ORIGIN/../TulparAudio:$ORIGIN/../UnicornRender")
 set(CMAKE_DEBUG_POSTFIX "")
+
+if (SLEIPNIR_BUILD_TESTS)
+    enable_testing()
+    include(CTest)
+endif()
 
 # Sleipnir Engine
 message("===============================")
@@ -150,7 +155,6 @@ if (UNIX)
     set(CPACK_DEBIAN_ENABLE_COMPONENT_DEPENDS ON)
 
     set(CPACK_INSTALL_CMAKE_PROJECTS
-        "${CMAKE_CURRENT_BINARY_DIR};Sleipnir Headers;sleipnir_headers;/"
         "${CMAKE_CURRENT_BINARY_DIR};Mule Headers;mule_headers;/"
         "${CMAKE_CURRENT_BINARY_DIR};Mule Libraries;mule_libraries;/"
         "${CMAKE_CURRENT_BINARY_DIR};Tulpar Headers;tulpar_headers;/"
@@ -169,6 +173,8 @@ if (UNIX)
         "${CMAKE_CURRENT_BINARY_DIR};Epona Headers;epona_headers;/"
         "${CMAKE_CURRENT_BINARY_DIR};Epona Extra;epona_extra;/"
         "${CMAKE_CURRENT_BINARY_DIR};Epona Libraries;epona_libraries;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Sleipnir Headers;sleipnir_headers;/"
+        "${CMAKE_CURRENT_BINARY_DIR};Sleipnir Libraies;sleipnir_libraries;/"
     )
 
     if (SLEIPNIR_SHLIBDEPS)
@@ -220,8 +226,6 @@ set(CPACK_GENERATOR ${SLEIPNIR_GENERATOR})
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
 set(CPACK_COMPONENTS_ALL
-    sleipnir_headers
-
     mule_headers
     mule_libraries
 
@@ -245,6 +249,9 @@ set(CPACK_COMPONENTS_ALL
     epona_headers
     epona_extra
     epona_libraries
+
+    sleipnir_headers
+    sleipnir_libraries
 )
 
 include(CPackComponent)
@@ -260,12 +267,6 @@ cpack_add_component_group(development
 )
 
 # CPack components
-
-cpack_add_component(sleipnir_headers
-    DISPLAY_NAME "Sleipnir Headers"
-    DESCRIPTION "Headers for Sleipnir Engine library"
-    GROUP "Development"
-)
 
 cpack_add_component(mule_libraries
     DISPLAY_NAME "Mule Library"
@@ -385,13 +386,25 @@ cpack_add_component(epona_extra
     GROUP "Development"
 )
 
+cpack_add_component(sleipnir_libraries
+    DISPLAY_NAME "Sleipnir Library"
+    DESCRIPTION "Sleipnir Engine library"
+    GROUP "Runtime"
+    DEPENDS unicorn_libraries pegasus_libraries mule_libraries
+)
+
+cpack_add_component(sleipnir_headers
+    DISPLAY_NAME "Sleipnir Headers"
+    DESCRIPTION "Headers for Sleipnir Engine library"
+    GROUP "Development"
+    DEPENDS sleipnir_libraries
+)
+
 include(CPack)
 
 # Perform install of needed components
 add_custom_target( mock_install
-    DEPENDS ${SLEIPNIR_ENGINE_LIB} ${MULE_UTILITIES_LIB} ${TULPAR_AUDIO_LIB} ${UNICORN_RENDER_LIB} ${EPONA_MATH_LIB} ${ARION_COLLISION_LIB} ${PEGASUS_PHYSICS_LIB}
-
-    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=sleipnir_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    DEPENDS Sleipnir::Engine Mule::Utilities Tulpar::Audio Unicorn::Render Epona::Math Arion::Collision Pegasus::Physics
 
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=mule_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
@@ -416,4 +429,7 @@ add_custom_target( mock_install
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_extra -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
     COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=pegasus_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=sleipnir_headers -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+    COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_CONFIG_NAME=${CMAKE_BUILD_TYPE} -DCOMPONENT=sleipnir_libraries -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 )
