@@ -22,7 +22,8 @@ target_sources(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    Mule::Utilities
+    PUBLIC
+        Mule::Utilities
 )
 
 target_include_directories(${PROJECT_NAME}

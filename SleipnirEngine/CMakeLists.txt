@@ -7,8 +7,11 @@ cmake_policy(VERSION 3.8)
 
 project(SleipnirEngine)
 
+set(SLEIPNIR_LIB_ALIAS Sleipnir::Engine)
+
 add_library(${PROJECT_NAME})
-add_library(Sleipnir::Engine ALIAS ${PROJECT_NAME})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(${SLEIPNIR_LIB_ALIAS} ALIAS ${PROJECT_NAME})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
@@ -67,13 +70,28 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:${SLEIPNIR_INSTALL_INCLUDE_DIR}>
 )
 
+# external depencies
 target_link_libraries(${PROJECT_NAME}
-    Sleipnir::Engine::ECS
-    Sleipnir::Engine::Utility
-    Mule::Utilities
+    PUBLIC
+        Mule::Utilities
 )
 
+# internal static libraries
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        Sleipnir::Engine::ECS
+        Sleipnir::Engine::Utility
+)
+
+
 include(SleipnirInstallInfo)
+
+set_target_properties(
+    ${PROJECT_NAME}
+    PROPERTIES
+        VERSION ${SLEIPNIR_VERSION}
+        SOVERSION ${SLEIPNIR_SOVERSION}
+)
 
 install( TARGETS ${PROJECT_NAME}
     COMPONENT sleipnir_libraries
@@ -90,6 +108,34 @@ install( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
             PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
         PATTERN "*.imp"
             PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+)
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    VERSION ${SLEIPNIR_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}Config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake.gen
+
+    @ONLY
+)
+
+file(GENERATE
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    INPUT ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake.gen
+)
+
+install(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    DESTINATION ${SLEIPNIR_INSTALL_LIBRARY_DIR}
+    COMPONENT sleipnir_headers
 )
 
 if (UNIX)
