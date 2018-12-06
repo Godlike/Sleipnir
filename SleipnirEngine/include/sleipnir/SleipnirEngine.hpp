@@ -7,7 +7,17 @@
 #ifndef SLEIPNIR_SLEIPNIR_ENGINE_HPP
 #define SLEIPNIR_SLEIPNIR_ENGINE_HPP
 
-#include <sleipnir/Systems.hpp>
+#include <sleipnir/SleipnirConfigurator.hpp>
+
+#include <sleipnir/ecs/Systems.hpp>
+#include <sleipnir/ecs/WorldTime.hpp>
+#include <sleipnir/ecs/entity/World.hpp>
+
+#include <tulpar/TulparAudio.hpp>
+#include <unicorn/UnicornRender.hpp>
+#include <pegasus/Scene.hpp>
+
+#include <cassert>
 
 namespace sleipnir
 {
@@ -40,27 +50,39 @@ public:
      */
     bool Initialize(SleipnirConfigurator const& config);
 
-    /** @brief  Reinitializes library instance
-     *
-     *  Using provided @p config reinitializes all required subsystems and
-     *  deinitializes all previously initialized subsystems that are missing
-     *  from @p config
-     *
-     *  @param  config  sleipnir configuration
-     *
-     *  @return @c true if reinitialization was successful, @c false otherwise
-     */
-    bool Reinitialize(SleipnirConfigurator const& config);
-
     /** @brief  Deinitializes all previously initialized subsystems */
     void Deinitialize();
 
+    /** @brief  Returns a reference to audio library */
+    tulpar::TulparAudio& GetAudio() { assert(nullptr != m_tulparAudio); return *m_tulparAudio; }
+
+    /** @brief  Returns a reference to rendering library */
+    unicorn::UnicornRender& GetRender() { assert(nullptr != m_unicornRender); return *m_unicornRender; }
+
+    /** @brief  Returns a reference to physics library */
+    pegasus::scene::Scene& GetPhysics() { assert(nullptr != m_pegasusPhysics); return *m_pegasusPhysics; }
+
     /** @brief  Returns a reference to ECS system controller */
-    Systems& GetSystems() { return m_systems; }
+    ecs::Systems& GetSystems() { return m_systems; }
+
+    /** @brief  Returns a reference to ECS entity world controller */
+    ecs::entity::World& GetEntityWorld() { return m_entityWorld; }
+
+    /** @brief  Returns a reference to ECS world time holder */
+    ecs::WorldTime& GetWorldTime() { return m_worldTime; }
 
 private:
+    ecs::entity::World m_entityWorld;
+    ecs::WorldTime m_worldTime;
+
     //! ECS system collection
-    Systems m_systems;
+    ecs::Systems m_systems;
+    std::vector< std::unique_ptr<ecs::system::ISystem> > m_createdSystems;
+
+    tulpar::TulparAudio* m_tulparAudio;
+    unicorn::UnicornRender* m_unicornRender;
+    pegasus::scene::Scene* m_pegasusPhysics;
+
 };
 
 }

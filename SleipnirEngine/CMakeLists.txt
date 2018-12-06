@@ -74,15 +74,22 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         Mule::Utilities
+        Tulpar::Audio
 )
 
 # internal static libraries
+if (UNIX)
+    set(EXPORT_SYMBOLS_PREFIX "-Wl,--whole-archive")
+    set(EXPORT_SYMBOLS_SUFFIX "-Wl,--no-whole-archive")
+endif()
+
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
+        ${EXPORT_SYMBOLS_PREFIX}
         Sleipnir::Engine::ECS
         Sleipnir::Engine::Utility
+        ${EXPORT_SYMBOLS_SUFFIX}
 )
-
 
 include(SleipnirInstallInfo)
 
@@ -108,6 +115,7 @@ install( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
             PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
         PATTERN "*.imp"
             PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ
+        PATTERN "utility/InternalLoggers.hpp" EXCLUDE
 )
 
 include(CMakePackageConfigHelpers)

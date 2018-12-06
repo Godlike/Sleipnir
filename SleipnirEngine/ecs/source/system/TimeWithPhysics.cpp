@@ -4,10 +4,12 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#include <sleipnir/ecs/system/Time.hpp>
+#include <sleipnir/ecs/system/TimeWithPhysics.hpp>
 
 #include <sleipnir/utility/Config.hpp>
+#include <sleipnir/utility/InternalLoggers.hpp>
 
+#include <cassert>
 #include <iostream>
 
 namespace sleipnir
@@ -17,21 +19,18 @@ namespace ecs
 namespace system
 {
 
-Time::Time(WorldTime& worldTime
+TimeWithPhysics::TimeWithPhysics(WorldTime& worldTime
     , physics::Physics& physicsSystem
 )
-    : factor(1.0f)
-    , m_realDuration(0)
-    , m_worldDuration(0)
-    , m_worldTime(worldTime)
+    : TimeBase(worldTime)
     , m_physicsSystem(physicsSystem)
 {
 
 }
 
-Time::TimeUnit Time::Update(TimeUnit realDuration)
+TimeWithPhysics::TimeUnit TimeWithPhysics::Update(TimeUnit realDuration)
 {
-    assert(factor > 0);
+    assert(m_factor > 0);
 
     m_realDuration = realDuration;
 
@@ -41,13 +40,12 @@ Time::TimeUnit Time::Update(TimeUnit realDuration)
     if ((worldNow - physNow) > utility::Config::PhysicsTick)
     {
         m_worldDuration = TimeUnit(0);
-        std::cerr << "[Time] Physics are lagging behind "
-            << std::chrono::microseconds(worldNow - physNow).count() << "us"
-            << std::endl;
+
+        LOG->Error("[TimeWithPhysics] Physics are lagging behind %dus", std::chrono::microseconds(worldNow - physNow).count());
     }
     else
     {
-        m_worldDuration = TimeUnit(static_cast<uint64_t>(static_cast<float>(realDuration.count()) * factor + 0.5f));
+        m_worldDuration = TimeUnit(static_cast<uint64_t>(static_cast<float>(realDuration.count()) * m_factor + 0.5f));
     }
 
     m_worldTime.SetTime(worldNow + m_worldDuration);

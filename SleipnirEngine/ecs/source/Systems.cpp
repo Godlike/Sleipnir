@@ -6,9 +6,6 @@
 
 #include <sleipnir/ecs/Systems.hpp>
 
-#include <sleipnir/ecs/system/Time.hpp>
-#include <sleipnir/ecs/system/physics/Physics.hpp>
-
 #include <assert.h>
 
 namespace sleipnir
@@ -16,26 +13,15 @@ namespace sleipnir
 namespace ecs
 {
 
-struct Systems::BuiltInSystems
+Systems::Systems(WorldTime& worldTime)
+    : m_timeSystem(std::make_shared<system::TimeBase>(worldTime))
 {
-    BuiltInSystems(entity::World& world, WorldTime& worldTime)
-        : physics(world, worldTime)
-        , time(worldTime, physics)
-    {}
 
-    system::physics::Physics physics;
-    system::Time time;
-};
-
-Systems::Systems(entity::World& world, WorldTime& worldTime)
-    : m_pBuiltInSystems(new BuiltInSystems(world, worldTime))
-{
-    Add(&(m_pBuiltInSystems->physics), static_cast<uint16_t>(DefaultPriority::Physics));
 }
 
-Systems::~Systems()
+void Systems::SetTimeSystem(std::shared_ptr<system::TimeBase> timeSystem)
 {
-    delete m_pBuiltInSystems;
+    m_timeSystem = timeSystem;
 }
 
 void Systems::Add(system::ISystem* pSystem, uint16_t priority)
@@ -66,7 +52,7 @@ void Systems::Delete(system::ISystem* pSystem)
 
 void Systems::RunOnce(WorldTime::TimeUnit realDuration)
 {
-    m_pBuiltInSystems->time.Update(realDuration);
+    m_timeSystem->Update(realDuration);
 
     for (Entry const& entry : m_systems)
     {

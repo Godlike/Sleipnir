@@ -8,11 +8,13 @@
 #define SLEIPNIR_ECS_SYSTEMS_HPP
 
 #include <sleipnir/ecs/system/ISystem.hpp>
+#include <sleipnir/ecs/system/TimeBase.hpp>
 
 #include <sleipnir/ecs/entity/World.hpp>
 #include <sleipnir/ecs/WorldTime.hpp>
 
 #include <cstdint>
+#include <memory>
 #include <set>
 
 namespace sleipnir
@@ -30,25 +32,30 @@ public:
     //! Bujlt-in priorities for default systems
     enum class DefaultPriority : uint16_t
     {
-        Time        = 0x0000
-        , Input     = 0x1000
+        Input     = 0x1000
         , Lifetime  = 0x2000
         , Timer     = 0x3000
         , Physics   = 0x4000
         , Render    = 0x5000
+        , Audio     = 0x6000
     };
 
     /** @brief  Basic constructor
      *
-     *  Registers default systems
+     *  Registers default time systems
      *
-     *  @param  world       entity world
      *  @param  worldTime   time holder
      */
-    Systems(entity::World& world, WorldTime& worldTime);
+    Systems(WorldTime& worldTime);
 
-    //! Basic destructor
-    ~Systems();
+    //! Default destructor
+    ~Systems() = default;
+
+    /** @brief  Set time system
+     *
+     *  @param  timeSystem  smart poitner to a time system
+     */
+    void SetTimeSystem(std::shared_ptr<system::TimeBase> timeSystem);
 
     /** @brief  Add system to the pool
      *
@@ -88,7 +95,9 @@ private:
 
         friend bool operator<(Entry const& lhs, Entry const& rhs)
         {
-            return lhs.priority < rhs.priority;
+            return (lhs.priority < rhs.priority) ? true
+                : ((lhs.priority > rhs.priority) ? false
+                    : (lhs.pSystem < rhs.pSystem));
         }
 
         friend bool operator==(Entry const& lhs, system::ISystem* pSystem)
@@ -102,10 +111,7 @@ private:
         }
     };
 
-    struct BuiltInSystems;
-
-    BuiltInSystems* m_pBuiltInSystems;
-
+    std::shared_ptr<system::TimeBase> m_timeSystem;
     std::set<Entry> m_systems;
 };
 

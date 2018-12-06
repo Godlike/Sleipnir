@@ -14,12 +14,12 @@
 namespace sleipnir
 {
 
-std::array<mule::LoggerPtr, utility::Log::size> g_loggers;
+std::array<mule::LoggerPtr, Log::size> g_loggers;
 
 namespace
 {
 
-static std::array<char const*, utility::Log::size> s_logger_names = {{
+static std::array<char const*, Log::size> s_logger_names = {{
     "sleipnir"
     , "sleipnir_profile"
 }};
@@ -30,7 +30,7 @@ std::vector<std::string> Loggers::GetDefaultLoggerNames() const
 {
     std::vector<std::string> result;
 
-    result.reserve(utility::Log::size);
+    result.reserve(Log::size);
 
     std::transform(
         s_logger_names.begin(), s_logger_names.end()
@@ -42,7 +42,7 @@ std::vector<std::string> Loggers::GetDefaultLoggerNames() const
 }
 
 Loggers::Loggers()
-    : mule::LoggerConfigBase(utility::Log::size)
+    : mule::LoggerConfigBase(Log::size)
     , mule::templates::Singleton<Loggers>()
 {
 
@@ -50,7 +50,7 @@ Loggers::Loggers()
 
 void Loggers::InitializeLogger(uint32_t index, Settings const& settings)
 {
-    assert(index < utility::Log::size);
+    assert(index < Log::size);
 
     g_loggers[index] = std::make_shared<mule::Logger>(
         (!settings.name.empty() ? settings.name : s_logger_names[index])

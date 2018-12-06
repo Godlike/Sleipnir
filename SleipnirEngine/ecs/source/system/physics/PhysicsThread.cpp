@@ -6,8 +6,9 @@
 
 #include <sleipnir/ecs/system/physics/PhysicsThread.hpp>
 
-#include <sleipnir/utility/Config.hpp>
 #include <sleipnir/utility/InternalLoggers.hpp>
+
+#include <sleipnir/utility/Config.hpp>
 
 #include <mule/ScopeProfiler.hpp>
 

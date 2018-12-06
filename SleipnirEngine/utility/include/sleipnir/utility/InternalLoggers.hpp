@@ -14,8 +14,6 @@
 
 namespace sleipnir
 {
-namespace utility
-{
 
 struct Log
 {
@@ -27,10 +25,9 @@ struct Log
 
 extern std::array<mule::LoggerPtr, Log::size> g_loggers;
 
-} // namespace utility
 } // namespace sleipnir
 
-#define LOG ::sleipnir::utility::g_loggers[::sleipnir::utility::Log::sleipnir]
-#define LOG_PROFILE ::sleipnir::utility::g_loggers[::sleipnir::utility::Log::sleipnir_profile]
+#define LOG ::sleipnir::g_loggers[::sleipnir::Log::sleipnir]
+#define LOG_PROFILE ::sleipnir::g_loggers[::sleipnir::Log::sleipnir_profile]
 
 #endif // SLEIPNIR_UTILITY_INTERNAL_LOGGERS_HPP

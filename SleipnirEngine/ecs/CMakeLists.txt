@@ -27,8 +27,9 @@ set(SLEIPNIR_ECS_SYSTEM_SOURCES
 
     source/system/Lifetime.cpp
     source/system/Render.cpp
-    source/system/Time.cpp
+    source/system/TimeBase.cpp
     source/system/Timer.cpp
+    source/system/TimeWithPhysics.cpp
 )
 
 set(SLEIPNIR_ECS_COMMON_SOURCES

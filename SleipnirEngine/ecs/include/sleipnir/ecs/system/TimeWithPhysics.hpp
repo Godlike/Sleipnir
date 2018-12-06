@@ -4,11 +4,12 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#ifndef SLEIPNIR_ECS_SYSTEM_TIME_HPP
-#define SLEIPNIR_ECS_SYSTEM_TIME_HPP
+#ifndef SLEIPNIR_ECS_SYSTEM_TIME_WITH_PHYSICS_HPP
+#define SLEIPNIR_ECS_SYSTEM_TIME_WITH_PHYSICS_HPP
 
 #include <sleipnir/ecs/WorldTime.hpp>
 
+#include <sleipnir/ecs/system/TimeBase.hpp>
 #include <sleipnir/ecs/system/physics/Physics.hpp>
 
 namespace sleipnir
@@ -23,21 +24,21 @@ namespace system
  *  In addition to time factor control, this system would throttle time
  *  whenever physics system is unable to catch up to world time
  */
-class Time
+class TimeWithPhysics : public TimeBase
 {
 public:
     //! Shortcut to time unit
-    using TimeUnit = WorldTime::TimeUnit;
+    using TimeUnit = TimeBase::TimeUnit;
 
     /** @brief  Basic constructor
      *
      *  @param  worldTime       time holder
      *  @param  physicsSystem   physics system
      */
-    Time(WorldTime& worldTime, physics::Physics& physicsSystem);
+    TimeWithPhysics(WorldTime& worldTime, physics::Physics& physicsSystem);
 
     //! Default destsructor
-    ~Time() = default;
+    ~TimeWithPhysics() = default;
 
     /** @brief  Method invoked each loop cycle
      *
@@ -52,33 +53,16 @@ public:
      *
      *  @return world time duration
      */
-    TimeUnit Update(TimeUnit realDuration);
-
-    //! Returns raw duration of current frame
-    TimeUnit GetRealDuration() const { return m_realDuration; }
-
-    //! Returns world duration of current frame
-    TimeUnit GetWorldDuration() const { return m_worldDuration; }
-
-    //! Time flow factor
-    float factor;
+    virtual TimeUnit Update(TimeUnit realDuration) override;
 
 private:
-    //! Raw duration of current frame
-    TimeUnit m_realDuration;
-
-    //! World duration of current frame
-    TimeUnit m_worldDuration;
-
-    //! Time holder
-    WorldTime& m_worldTime;
-
     //! Physics system
     physics::Physics& m_physicsSystem;
+
 };
 
 } // namespace system
 } // namespace ecs
 } // namespace sleipnir
 
-#endif // SLEIPNIR_ECS_SYSTEM_TIME_HPP
+#endif // SLEIPNIR_ECS_SYSTEM_TIME_WITH_PHYSICS_HPP
