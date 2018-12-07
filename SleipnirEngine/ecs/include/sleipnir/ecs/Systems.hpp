@@ -13,6 +13,7 @@
 #include <sleipnir/ecs/entity/World.hpp>
 #include <sleipnir/ecs/WorldTime.hpp>
 
+#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <set>
@@ -22,6 +23,17 @@ namespace sleipnir
 namespace ecs
 {
 
+namespace system
+{
+namespace physics
+{
+    class Physics;
+}
+
+class Render;
+
+}
+
 /** @brief  Runs registered systems
  *
  *  Uses priority to sort the systems
@@ -30,14 +42,14 @@ class Systems final
 {
 public:
     //! Bujlt-in priorities for default systems
-    enum class DefaultPriority : uint16_t
+    struct DefaultPriority
     {
-        Input     = 0x1000
-        , Lifetime  = 0x2000
-        , Timer     = 0x3000
-        , Physics   = 0x4000
-        , Render    = 0x5000
-        , Audio     = 0x6000
+        static constexpr uint16_t Input     = 0x1000;
+        static constexpr uint16_t Lifetime  = 0x2000;
+        static constexpr uint16_t Timer     = 0x3000;
+        static constexpr uint16_t Physics   = 0x4000;
+        static constexpr uint16_t Render    = 0x5000;
+        static constexpr uint16_t Audio     = 0x6000;
     };
 
     /** @brief  Basic constructor
@@ -78,6 +90,35 @@ public:
      */
     void RunOnce(WorldTime::TimeUnit realDuration);
 
+    /** @brief  Sets render system
+     *
+     *  Also adds given system to @ref m_systems
+     *
+     *  @param  system  reference to render system
+     *
+     *  @sa Add
+     */
+    void SetRender(system::Render& system);
+
+    /** @brief  Returns render system */
+    system::Render& GetRender() const { assert(nullptr != m_pRenderSystem); return *m_pRenderSystem; }
+
+    /** @brief  Sets physics system
+     *
+     *  Also adds given system to @ref m_systems
+     *
+     *  @param  system  reference to physics system
+     *
+     *  @sa Add
+     */
+    void SetPhysics(system::physics::Physics& system);
+
+    /** @brief  Returns physics system */
+    system::physics::Physics& GetPhysics() const { assert(nullptr != m_pPhysicsSystem); return *m_pPhysicsSystem; }
+
+    /** @brief  Returns time system */
+    system::TimeBase& GetTime() const { assert(nullptr != m_timeSystem); return *m_timeSystem.get(); }
+
 private:
     //! System-priority coupling
     struct Entry
@@ -110,6 +151,9 @@ private:
             return !operator==(lhs, pSystem);
         }
     };
+
+    system::Render* m_pRenderSystem;
+    system::physics::Physics* m_pPhysicsSystem;
 
     std::shared_ptr<system::TimeBase> m_timeSystem;
     std::set<Entry> m_systems;

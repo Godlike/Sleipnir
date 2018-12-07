@@ -10,6 +10,7 @@
 // #include <pegasus/Loggers.hpp>
 
 #include <sleipnir/ecs/system/Lifetime.hpp>
+#include <sleipnir/Loggers.hpp>
 
 namespace sleipnir
 {
@@ -36,6 +37,11 @@ public:
         // pegasus::Loggers::Settings* loggerOverride = nullptr;
         void* config = nullptr;
     } pegasus;
+
+    struct Sleipnir
+    {
+        sleipnir::Loggers::Settings* loggerOverride = nullptr;
+    } sleipnir;
 
     struct Lifetime
     {

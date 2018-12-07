@@ -37,6 +37,18 @@ bool SleipnirEngine::Initialize(SleipnirConfigurator const& config)
 
     mule::MuleUtilities::Initialize();
 
+    { //! Sleipnir initialization
+        SleipnirConfigurator::Sleipnir const& sleipnir = config.sleipnir;
+
+        sleipnir::Loggers::Settings const& loggerSettings = (nullptr == sleipnir.loggerOverride)
+            ? config.globalLoggerSettings
+            : *(sleipnir.loggerOverride)
+        ;
+
+        sleipnir::Loggers::Instance().SetDefaultSettings(loggerSettings);
+        sleipnir::Loggers::Instance().Reinitialize();
+    }
+
     { //! Tulpar initialization
         SleipnirConfigurator::Tulpar const& tulpar = config.tulpar;
 
@@ -69,9 +81,11 @@ bool SleipnirEngine::Initialize(SleipnirConfigurator const& config)
             m_unicornRender = new unicorn::UnicornRender();
             success &= m_unicornRender->Init();
 
-            ecs::system::ISystem* pSystem = new ecs::system::Render(m_entityWorld);
+            ecs::system::Render* pSystem = new ecs::system::Render(m_entityWorld);
+            pSystem->Initialize(*unicorn.config, *m_unicornRender);
+
             m_createdSystems.emplace_back(pSystem);
-            m_systems.Add(pSystem, static_cast<uint16_t>(ecs::Systems::DefaultPriority::Render));
+            m_systems.SetRender(*pSystem);
         }
     }
 
@@ -91,7 +105,7 @@ bool SleipnirEngine::Initialize(SleipnirConfigurator const& config)
 
             ecs::system::physics::Physics* pSystem = new ecs::system::physics::Physics(m_entityWorld, m_worldTime);
             m_createdSystems.emplace_back(pSystem);
-            m_systems.Add(pSystem, static_cast<uint16_t>(ecs::Systems::DefaultPriority::Physics));
+            m_systems.SetPhysics(*pSystem);
 
             m_systems.SetTimeSystem(std::make_shared<ecs::system::TimeWithPhysics>(m_worldTime, *pSystem));
         }

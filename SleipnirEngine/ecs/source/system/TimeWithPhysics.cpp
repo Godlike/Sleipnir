@@ -41,7 +41,7 @@ TimeWithPhysics::TimeUnit TimeWithPhysics::Update(TimeUnit realDuration)
     {
         m_worldDuration = TimeUnit(0);
 
-        LOG->Error("[TimeWithPhysics] Physics are lagging behind %dus", std::chrono::microseconds(worldNow - physNow).count());
+        LOG->Error("[TimeWithPhysics] Physics are lagging behind {}us", std::chrono::microseconds(worldNow - physNow).count());
     }
     else
     {

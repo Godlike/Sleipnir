@@ -51,6 +51,9 @@ public:
     //! Set time flow factor
     void SetFactor(float factor) { m_factor = factor; }
 
+    //! Returns time flow factor
+    float GetFactor() const { return m_factor; }
+
 protected:
     //! Time flow factor
     float m_factor;
