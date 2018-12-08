@@ -29,18 +29,23 @@ class Lifetime : public Skeleton<component::LifetimeComponent>
 {
 public:
     //! Shortcut to user's entity reclaiming callback
-    using EntityReclaimer = std::function<void(const entity::Entity&)>;
+    using EntityReclaimer = std::function<void(entity::Entity const&)>;
 
     /** @brief  Basic constructor
      *
      *  @param  world       entity world
      *  @param  worldTime   time holder
-     *  @param  reclaimer   entity reclaiming callback
      */
-    Lifetime(entity::World& world, WorldTime& worldTime, EntityReclaimer reclaimer);
+    Lifetime(entity::World& world, WorldTime& worldTime);
 
     //! Default destructor
     ~Lifetime() = default;
+
+    /** @brief  Initializes system
+     *
+     *  @param  reclaimer   entity reclaiming callback
+     */
+    void Initialize(EntityReclaimer reclaimer);
 
     /** @brief  Method invoked each loop cycle
      *

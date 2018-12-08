@@ -13,6 +13,16 @@
 #include <mule/Loggers.hpp>
 #include <mule/MuleUtilities.hpp>
 
+#include <functional>
+#include <vector>
+
+namespace
+{
+
+static std::vector< std::function<void()> > s_initializers = {};
+
+}
+
 namespace sleipnir
 {
 
@@ -82,7 +92,10 @@ bool SleipnirEngine::Initialize(SleipnirConfigurator const& config)
             success &= m_unicornRender->Init();
 
             ecs::system::Render* pSystem = new ecs::system::Render(m_entityWorld);
-            pSystem->Initialize(*unicorn.config, *m_unicornRender);
+
+            s_initializers.push_back([=]() -> void {
+                pSystem->Initialize(*unicorn.config, *m_unicornRender);
+            });
 
             m_createdSystems.emplace_back(pSystem);
             m_systems.SetRender(*pSystem);
@@ -104,6 +117,11 @@ bool SleipnirEngine::Initialize(SleipnirConfigurator const& config)
             m_pegasusPhysics = new pegasus::scene::Scene();
 
             ecs::system::physics::Physics* pSystem = new ecs::system::physics::Physics(m_entityWorld, m_worldTime);
+
+            s_initializers.push_back([=]() -> void {
+                pSystem->Initialize();
+            });
+
             m_createdSystems.emplace_back(pSystem);
             m_systems.SetPhysics(*pSystem);
 
@@ -114,8 +132,14 @@ bool SleipnirEngine::Initialize(SleipnirConfigurator const& config)
     { //! Lifetime initialization
         SleipnirConfigurator::Lifetime const& lifetime = config.lifetime;
 
-        ecs::system::ISystem* pSystem = new ecs::system::Lifetime(m_entityWorld, m_worldTime, lifetime.reclaimer);
+        ecs::system::Lifetime* pSystem = new ecs::system::Lifetime(m_entityWorld, m_worldTime);
+
+        s_initializers.push_back([pSystem, &lifetime]() -> void {
+            pSystem->Initialize(lifetime.reclaimer);
+        });
+
         m_systems.Add(pSystem, static_cast<uint16_t>(ecs::Systems::DefaultPriority::Lifetime));
+
     }
 
     return success;
@@ -147,6 +171,19 @@ void SleipnirEngine::Deinitialize()
 
         m_tulparAudio = nullptr;
     }
+}
+
+void SleipnirEngine::InitializeBuiltInSystems()
+{
+    for (auto& initializer : s_initializers)
+    {
+        initializer();
+    }
+}
+
+void SleipnirEngine::Run()
+{
+    m_unicornRender->Run();
 }
 
 }

@@ -19,13 +19,17 @@ namespace system
 
 Lifetime::Lifetime(entity::World& world
     , WorldTime& worldTime
-    , EntityReclaimer reclaimer
 )
     : Skeleton<component::LifetimeComponent>(world)
     , m_worldTime(worldTime)
-    , m_reclaimer(reclaimer)
+    , m_reclaimer([](entity::Entity const&) -> void {})
 {
 
+}
+
+void Lifetime::Initialize(EntityReclaimer reclaimer)
+{
+    m_reclaimer = reclaimer;
 }
 
 void Lifetime::Update()

@@ -53,6 +53,12 @@ public:
     /** @brief  Deinitializes all previously initialized subsystems */
     void Deinitialize();
 
+    /** @brief  Initializes all created built-in systems */
+    void InitializeBuiltInSystems();
+
+    /** @brief  Starts control flow */
+    void Run();
+
     /** @brief  Returns a reference to audio library */
     tulpar::TulparAudio& GetAudio() { assert(nullptr != m_tulparAudio); return *m_tulparAudio; }
 

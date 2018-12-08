@@ -12,6 +12,8 @@
 #include <sleipnir/ecs/system/Lifetime.hpp>
 #include <sleipnir/Loggers.hpp>
 
+#include <functional>
+
 namespace sleipnir
 {
 
@@ -45,7 +47,7 @@ public:
 
     struct Lifetime
     {
-        ecs::system::Lifetime::EntityReclaimer reclaimer = nullptr;
+        ecs::system::Lifetime::EntityReclaimer reclaimer = [](ecs::entity::Entity const&) -> void {};
     } lifetime;
 };
 
