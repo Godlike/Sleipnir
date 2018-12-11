@@ -9,7 +9,7 @@ project(SleipnirEngine)
 
 set(SLEIPNIR_LIB_ALIAS Sleipnir::Engine)
 
-add_library(${PROJECT_NAME})
+add_library(${PROJECT_NAME} "")
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 add_library(${SLEIPNIR_LIB_ALIAS} ALIAS ${PROJECT_NAME})
 
@@ -68,6 +68,8 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${SLEIPNIR_INSTALL_INCLUDE_DIR}>
+        $<TARGET_PROPERTY:Sleipnir::Engine::ECS,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:Sleipnir::Engine::Utility,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 # external depencies
@@ -84,7 +86,7 @@ if (UNIX)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC
+    PRIVATE
         ${EXPORT_SYMBOLS_PREFIX}
         Sleipnir::Engine::ECS
         Sleipnir::Engine::Utility

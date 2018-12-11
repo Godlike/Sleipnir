@@ -7,7 +7,7 @@ cmake_policy(VERSION 3.8)
 
 project(SleipnirEngine_ECS)
 
-add_library(${PROJECT_NAME} STATIC)
+add_library(${PROJECT_NAME} STATIC "")
 add_library(Sleipnir::Engine::ECS ALIAS ${PROJECT_NAME})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

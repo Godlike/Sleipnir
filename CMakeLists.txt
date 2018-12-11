@@ -65,6 +65,18 @@ if (Mule_FOUND)
     include(${Mule_CONFIG_DIR}/MuleUtilitiesConfig.cmake)
 endif()
 
+# Tulpar
+message("====================================")
+message("== Preparing Tulpar audio library ==")
+message("====================================")
+
+set(TULPAR_BUILD_DOCUMENTATION ${SLEIPNIR_BUILD_DOCUMENTATION} CACHE BOOL "Build Tulpar documentation")
+set(TULPAR_BUILD_DEMOS OFF CACHE BOOL "Build Tulpar demos")
+set(TULPAR_BUILD_TESTS OFF CACHE BOOL "Build Tulpar tests")
+set(TULPAR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Tulpar" CACHE STRING "Tulpar root directory.")
+
+add_subdirectory(${TULPAR_ROOT})
+
 # Unicorn Render
 message("========================================")
 message("== Preparing Unicorn rendering engine ==")
@@ -119,18 +131,6 @@ set(PEGASUS_BUILD_TESTS OFF CACHE BOOL "Build Pegasus tests.")
 set(PEGASUS_BUILD_DEBUG OFF CACHE BOOL "Build Pegasus debug.")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/godlike/Pegasus)
-
-# Tulpar
-message("====================================")
-message("== Preparing Tulpar audio library ==")
-message("====================================")
-
-set(TULPAR_BUILD_DOCUMENTATION ${SLEIPNIR_BUILD_DOCUMENTATION} CACHE BOOL "Build Tulpar documentation")
-set(TULPAR_BUILD_DEMOS OFF CACHE BOOL "Build Tulpar demos")
-set(TULPAR_BUILD_TESTS OFF CACHE BOOL "Build Tulpar tests")
-set(TULPAR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/godlike/Tulpar" CACHE STRING "Tulpar root directory.")
-
-add_subdirectory(${TULPAR_ROOT})
 
 # Install information
 message("=====================================")
