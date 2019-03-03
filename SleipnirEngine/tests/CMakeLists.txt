@@ -64,3 +64,17 @@ endfunction()
 sleipnir_add_test(NAME TemplateCounter
     SOURCE utility/TemplateCounterTest.cpp
 )
+
+sleipnir_add_test(NAME ChangeControl_TestUtils
+    SOURCE
+        utility/cc/ccTestUtilsTest.cpp
+        utility/cc/ccTestUtils.hpp
+        utility/cc/ccTestUtils.cpp
+)
+
+sleipnir_add_test(NAME ChangeControl_Changes
+    SOURCE
+        utility/cc/ChangesTest.cpp
+        utility/cc/ccTestUtils.hpp
+        utility/cc/ccTestUtils.cpp
+)
