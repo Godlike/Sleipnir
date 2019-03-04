@@ -14,7 +14,7 @@ SCENARIO("Changes::Instance operations", "[general]")
     ObjectChanges::ModifyCollection modifies;
     ObjectChanges::DeleteCollection deletes;
 
-    changes.Pull(adds, modifies, deletes);
+    changes.Pull().Export(adds, modifies, deletes);
 
     REQUIRE(adds.empty());
     REQUIRE(modifies.empty());
@@ -41,7 +41,7 @@ SCENARIO("Changes::Instance operations", "[general]")
 
             THEN("they are accessible through parent changes")
             {
-                changes.Pull(adds, modifies, deletes);
+                changes.Pull().Export(adds, modifies, deletes);
 
                 REQUIRE(!adds.empty());
                 REQUIRE(!modifies.empty());
