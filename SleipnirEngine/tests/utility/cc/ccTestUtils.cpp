@@ -168,10 +168,10 @@ Object* ObjectCollection::Spawn(ObjectMemento const& memento)
 
 Object* ObjectCollection::Get(ObjectMemento const& memento) const
 {
-    auto it = std::find_if(m_collection.cbegin(), m_collection.cend(), [=](Object* const& pObj) -> bool
+    auto it = std::find_if(m_collection.cbegin(), m_collection.cend(), [id = memento.id](Object* const& pObj) -> bool
         {
             return ((nullptr != pObj)
-                ? (pObj->GetId() == memento.id)
+                ? (pObj->GetId() == id)
                 : false);
         });
 

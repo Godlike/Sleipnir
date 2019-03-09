@@ -40,6 +40,8 @@ public:
         Instance(Instance&& other) = default;
         Instance& operator=(Instance&& other) = default;
 
+        bool IsEmpty() const { return m_add.empty() && m_modify.empty() && m_delete.empty(); }
+
         bool operator<(Instance const& other) const { return m_priority < other.m_priority; }
 
         void Add(Snapshot entry) { m_add.push_back(entry); }
@@ -87,17 +89,17 @@ public:
         DeleteCollection m_delete;
     };
 
-    template<typename Collection>
+    template<typename TChanges, typename Collection>
     class Integrator
     {
     public:
-        Integrator(Collection& collection);
+        Integrator(Collection& collection) : m_collection(collection) {}
 
-        void Integrate(Instance const& diff)
+        void Integrate(typename TChanges::Instance& diff)
         {
-            AddCollection adds;
-            ModifyCollection modifies;
-            DeleteCollection deletes;
+            typename TChanges::AddCollection adds;
+            typename TChanges::ModifyCollection modifies;
+            typename TChanges::DeleteCollection deletes;
 
             diff.Export(adds, modifies, deletes);
 

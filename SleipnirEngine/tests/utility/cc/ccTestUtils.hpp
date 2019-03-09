@@ -101,6 +101,7 @@ private:
 };
 
 using ObjectChanges = sleipnir::utility::cc::Changes<ObjectMemento>;
+using ObjectIntegrator = ObjectChanges::Integrator<ObjectChanges, ObjectCollection>;
 
 }
 
