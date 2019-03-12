@@ -89,6 +89,8 @@ private:
 class ObjectCollection
 {
 public:
+    using Object = ccTestUtils::Object;
+
     ObjectCollection();
 
     Object* Spawn(ObjectMemento const& memento);
@@ -101,7 +103,7 @@ private:
 };
 
 using ObjectChanges = sleipnir::utility::cc::Changes<ObjectMemento>;
-using ObjectIntegrator = ObjectChanges::Integrator<ObjectChanges, ObjectCollection>;
+using ObjectIntegrator = ObjectChanges::Integrator<ObjectCollection>;
 
 }
 

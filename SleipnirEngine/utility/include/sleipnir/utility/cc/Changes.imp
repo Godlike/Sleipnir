@@ -1,0 +1,188 @@
+/*
+* Copyright (C) 2019 by Godlike
+* This code is licensed under the MIT license (MIT)
+* (http://opensource.org/licenses/MIT)
+*/
+
+#ifndef SLEIPNIR_UTILITY_CC_CHANGES_IMP
+#define SLEIPNIR_UTILITY_CC_CHANGES_IMP
+
+#include <sleipnir/utility/cc/Changes.hpp>
+
+namespace sleipnir
+{
+namespace utility
+{
+namespace cc
+{
+
+//! Changes::Instance
+
+template<typename TMemento>
+    bool Changes<TMemento>::Instance::IsEmpty() const
+    {
+        return m_add.empty() && m_modify.empty() && m_delete.empty();
+    }
+
+template<typename TMemento>
+    bool Changes<TMemento>::Instance::operator<(Changes<TMemento>::Instance const& other) const
+    {
+        return m_priority < other.m_priority;
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Instance::Add(Changes<TMemento>::Snapshot entry)
+    {
+        m_add.push_back(entry);
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Instance::Modify(Changes<TMemento>::Snapshot entry, Changes<TMemento>::ModifyOperation operation)
+    {
+        m_modify.emplace_back(entry, operation);
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Instance::Delete(Changes<TMemento>::Snapshot entry)
+    {
+        m_delete.push_back(entry);
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Instance::Reset()
+    {
+        m_add.clear();
+        m_modify.clear();
+        m_delete.clear();
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Instance::Push()
+    {
+        assert(nullptr != m_pParent);
+
+        m_pParent->Push(*this);
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Instance::Export(Changes<TMemento>::AddCollection& adds
+        , Changes<TMemento>::ModifyCollection& modifies
+        , Changes<TMemento>::DeleteCollection& deletes
+    )
+    {
+        adds.clear();
+        modifies.clear();
+        deletes.clear();
+
+        m_add.swap(adds);
+        m_modify.swap(modifies);
+        m_delete.swap(deletes);
+    }
+
+template<typename TMemento>
+    Changes<TMemento>::Instance::Instance(Changes<TMemento>* pParent, uint16_t priority)
+        : m_pParent(pParent)
+        , m_priority(priority)
+    {
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Instance::Merge(Changes<TMemento>::Instance const& other)
+    {
+        m_add.insert(m_add.cend(), other.m_add.cbegin(), other.m_add.cend());
+        m_modify.insert(m_modify.cend(), other.m_modify.cbegin(), other.m_modify.cend());
+        m_delete.insert(m_delete.cend(), other.m_delete.cbegin(), other.m_delete.cend());
+    }
+
+// Changes::Integrator
+
+template<typename TMemento> template<class TCollection>
+    Changes<TMemento>::Integrator<TCollection>::Integrator(TCollection& collection)
+    : m_collection(collection)
+    {
+    }
+
+template<typename TMemento> template<class TCollection>
+    void Changes<TMemento>::Integrator<TCollection>::Integrate(Changes<TMemento>::Instance& diff)
+    {
+        using Object = typename TCollection::Object;
+
+        typename Changes<TMemento>::AddCollection adds;
+        typename Changes<TMemento>::ModifyCollection modifies;
+        typename Changes<TMemento>::DeleteCollection deletes;
+
+        diff.Export(adds, modifies, deletes);
+
+        for (auto const& _delete : deletes)
+        {
+            m_collection.Delete(_delete);
+        }
+
+        for (auto const& _add : adds)
+        {
+            m_collection.Spawn(_add);
+        }
+
+        for (auto const& _modify : modifies)
+        {
+            Object* pObj = m_collection.Get(_modify.first);
+
+            if (nullptr != pObj)
+            {
+                (pObj->*(_modify.second))(_modify.first);
+            }
+        }
+    }
+
+template<typename TMemento>
+    typename Changes<TMemento>::Instance Changes<TMemento>::Clone(uint16_t priority)
+    {
+        using Instance = Changes<TMemento>::Instance;
+
+        return Instance(this, priority);
+    }
+
+template<typename TMemento>
+    void Changes<TMemento>::Push(Changes<TMemento>::Instance& instance)
+    {
+        using Instance = Changes<TMemento>::Instance;
+
+        Instance tmp(instance.m_pParent, instance.m_priority);
+        std::swap(tmp, instance);
+
+        {
+            std::lock_guard<std::mutex> lock(m_hostMutex);
+
+            m_pushes.push(tmp);
+        }
+    }
+
+template<typename TMemento>
+    typename Changes<TMemento>::Instance Changes<TMemento>::Pull()
+    {
+        using Instance = Changes<TMemento>::Instance;
+
+        std::priority_queue<Instance> pending;
+
+        {
+            std::lock_guard<std::mutex> lock(m_hostMutex);
+
+            pending.swap(m_pushes);
+        }
+
+        Instance result(nullptr, 0);
+
+        while (!pending.empty())
+        {
+            result.Merge(pending.top());
+            pending.pop();
+        }
+
+        return result;
+    }
+
+}
+}
+}
+
+#endif // SLEIPNIR_UTILITY_CC_CHANGES_IMP
