@@ -49,6 +49,16 @@ struct ObjectMemento
     using Object = ccTestUtils::Object;
     constexpr static uint16_t INVALID_ID = 0xFFFF;
 
+    bool operator==(ObjectMemento const& other) const
+    {
+        return id == other.id
+            && pos.first == other.pos.first
+            && pos.second == other.pos.second
+            && mass.first == other.mass.first
+            && mass.second == other.mass.second
+        ;
+    }
+
     uint16_t id = INVALID_ID;
 
     std::pair<bool, Position> pos;
