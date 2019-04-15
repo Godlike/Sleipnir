@@ -13,9 +13,11 @@
 #include <sleipnir/ecs/system/physics/BodyHandle.hpp>
 #include <sleipnir/ecs/system/physics/DynamicForceController.hpp>
 #include <sleipnir/ecs/system/physics/PegasusAdapter.hpp>
-#include <sleipnir/ecs/system/physics/SpawnInfo.hpp>
+#include <sleipnir/ecs/system/physics/PegasusPrimitives.hpp>
 
 #include <sleipnir/utility/QSBR.hpp>
+
+#include <sleipnir/utility/cc/Changes.hpp>
 
 #include <atomic>
 #include <thread>
@@ -43,6 +45,9 @@ public:
     //! QSBR section id for @ref memoryReclaimer
     using SectionIndex = utility::QSBR::SectionIndex;
 
+    //! Shortcut to change control repo
+    using ChangeControl = utility::cc::Changes<BodyMemento>;
+
     /** @brief  Basic constructor
      *
      *  @param  worldTime   time holder
@@ -64,39 +69,6 @@ public:
     //! Returns latest state of QSBR controlled body positions
     BodyPositions* GetBodyPositions() const;
 
-    /** @brief  Creates a body handle and order to spawn a body
-     *
-     *  Enqueues body creation in physics engine at current world time
-     *
-     *  @param  info    body information
-     *
-     *  @return newly created body handle
-     *
-     *  @sa PushBody(), DeleteBody()
-     */
-    BodyHandle* SpawnBody(SpawnInfo const& info);
-
-    /** @brief  Applies given @p force to given @p bodyHandle
-     *
-     *  Enqueues body push in physics engine at current world time
-     *
-     *  @param  pHandle body handle
-     *  @param  force   force to be applied
-     *
-     *  @sa SpawnBody(), DeleteBody()
-     */
-    void PushBody(BodyHandle const* pHandle, glm::vec3 force);
-
-    /** @brief  Removes body handle from physics engine
-     *
-     *  Enqueues body deletion from physics engine at current world time
-     *
-     *  @param  bodyHandle  body handle
-     *
-     *  @sa SpawnBody(), PushBody()
-     */
-    void DeleteBody(BodyHandle const* pHandle);
-
     /** @brief  Creates gravity source in physics engine
      *
      *  @param  id          force id
@@ -117,6 +89,9 @@ public:
 
     //! Returns current time in physics world
     WorldTime::TimeUnit GetCurrentTime() const;
+
+    //! Generates change control instance
+    ChangeControl::Instance CloneChanges(uint16_t priority = 0x8000);
 
     //! QSBR memory reclaimer controlling @ref BodyPositions
     utility::QSBR memoryReclaimer;
@@ -176,8 +151,8 @@ private:
     //! Force controller
     DynamicForceController m_dynamicForceController;
 
-    //! Body controller
-    BodyController m_bodyController;
+    //! Change controller
+    ChangeControl::Instance m_changeControl;
 };
 
 } // namespace physics

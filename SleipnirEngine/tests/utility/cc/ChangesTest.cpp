@@ -175,7 +175,7 @@ SCENARIO("Basic Changes::Instance", "[general]")
         }
     }
 
-    GIVEN("Instrance with several operations")
+    GIVEN("Instance with several operations")
     {
         ObjectChanges::AddCollection adds;
         ObjectChanges::ModifyCollection modifies;

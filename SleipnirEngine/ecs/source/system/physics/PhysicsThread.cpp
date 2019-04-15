@@ -30,16 +30,16 @@ PhysicsThread::PhysicsThread(WorldTime& worldTime)
     , m_working(true)
     , m_timeControl(worldTime)
     , m_currentPositions(nullptr)
-    , m_physicsEngine()
+    , m_physicsEngine(m_changeControl)
     , m_dynamicForceController(m_physicsEngine)
-    , m_bodyController(m_physicsEngine)
+    , m_changeControl()
 {
-    m_currentPositions.store(new BodyPositions());
+    m_currentPositions.store(new BodyPositions(), std::memory_order_release);
 }
 
 PhysicsThread::~PhysicsThread()
 {
-    delete m_currentPositions.load();
+    delete m_currentPositions.load(std::memory_order_acquire);
 }
 
 void PhysicsThread::Initialize()
@@ -54,7 +54,7 @@ void PhysicsThread::Run()
 
 void PhysicsThread::Join()
 {
-    m_working.store(false);
+    m_working.store(false, std::memory_order_release);
 
     if (m_thread.joinable())
     {
@@ -64,38 +64,7 @@ void PhysicsThread::Join()
 
 PhysicsThread::BodyPositions* PhysicsThread::GetBodyPositions() const
 {
-    return m_currentPositions.load();
-}
-
-BodyHandle* PhysicsThread::SpawnBody(SpawnInfo const& info)
-{
-    BodyHandle* pHandle = new BodyHandle();
-    pHandle->bodyHandle.store(pegasus::scene::Handle());
-
-    m_bodyController.Spawn({
-        pHandle
-        , m_timeControl.worldTime.GetTime()
-        , info
-    });
-
-    return pHandle;
-}
-
-void PhysicsThread::PushBody(BodyHandle const* pHandle, glm::vec3 force)
-{
-    m_bodyController.Push({
-        pHandle
-        , m_timeControl.worldTime.GetTime()
-        , force
-    });
-}
-
-void PhysicsThread::DeleteBody(BodyHandle const* pHandle)
-{
-    m_bodyController.Delete({
-        pHandle
-        , m_timeControl.worldTime.GetTime()
-    });
+    return m_currentPositions.load(std::memory_order_acquire);
 }
 
 void PhysicsThread::CreateGravitySource(uint32_t id, glm::vec3 position, double magnitude)
@@ -118,7 +87,12 @@ void PhysicsThread::DeleteGravitySource(uint32_t id)
 
 WorldTime::TimeUnit PhysicsThread::GetCurrentTime() const
 {
-    return WorldTime::TimeUnit(m_timeControl.currentTimeRaw.load());
+    return WorldTime::TimeUnit(m_timeControl.currentTimeRaw.load(std::memory_order_acquire));
+}
+
+ChangeControl::Instance PhysicsThread::CloneChanges(uint16_t priority)
+{
+    return m_changeControl.Clone(priority);
 }
 
 // PhysicsThread::TimeControl
@@ -152,7 +126,7 @@ void PhysicsThread::Routine()
 
             PollPositions();
 
-            m_timeControl.currentTimeRaw.store(future.count());
+            m_timeControl.currentTimeRaw.store(future.count(), std::memory_order_release);
 
             memoryReclaimer.OnQuiescentState(m_sectionId);
 
@@ -161,12 +135,12 @@ void PhysicsThread::Routine()
         }
 
         std::this_thread::yield();
-    } while (m_working.load());
+    } while (m_working.load(std::memory_order_acquire));
 }
 
 void PhysicsThread::PollPositions()
 {
-    BodyPositions* pOldPositions = m_currentPositions.load();
+    BodyPositions* pOldPositions = m_currentPositions.load(std::memory_order_acquire);
     BodyPositions* pNewPositions = new BodyPositions();
 
     {
@@ -185,7 +159,7 @@ void PhysicsThread::PollPositions()
         }
     }
 
-    m_currentPositions.store(pNewPositions);
+    m_currentPositions.store(pNewPositions, std::memory_order_release);
 
     memoryReclaimer.AddCallback([=](){ delete pOldPositions; });
 }

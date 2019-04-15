@@ -7,6 +7,8 @@
 #ifndef SLEIPNIR_UTILITY_CC_CHANGES_HPP
 #define SLEIPNIR_UTILITY_CC_CHANGES_HPP
 
+#include <sleipnir/ecs/WorldTime.hpp>
+
 #include <mutex>
 #include <queue>
 #include <utility>
@@ -19,7 +21,7 @@ namespace utility
 namespace cc
 {
 
-template<typename TMemento>
+template<typename TMemento, typename TTimeUnit = ecs::WorldTime::TimeUnit>
 class Changes
 {
 public:
@@ -40,9 +42,10 @@ public:
         Instance(Instance&& other) = default;
         Instance& operator=(Instance&& other) = default;
 
-        bool IsEmpty() const;
-
         bool operator<(Instance const& other) const;
+
+        bool IsEmpty() const;
+        uint16_t GetPriority() const { return m_priority; }
 
         void Add(Snapshot entry);
         void Modify(Snapshot entry, ModifyOperation operation);
@@ -50,7 +53,7 @@ public:
 
         void Reset();
 
-        void Push();
+        void Push(TTimeUnit timestamp);
 
         void Export(AddCollection& adds, ModifyCollection& modifies, DeleteCollection& deletes);
 
@@ -83,16 +86,33 @@ public:
 
     Changes() = default;
 
+    Changes(Changes const& other) = delete;
+    Changes& operator=(Changes const& other) = delete;
+
+    Changes(Changes&& other) = delete;
+    Changes& operator=(Changes&& other) = delete;
+
+    ~Changes() = default;
+
     Instance Clone(uint16_t priority = 0x8000);
 
-    void Push(Instance& instance);
+    void Push(Instance& instance, TTimeUnit timestamp);
 
-    Instance Pull();
+    Instance Pull(TTimeUnit timestamp);
 
 private:
     std::mutex m_hostMutex;
 
-    std::priority_queue<Instance> m_pushes;
+    struct PushCommand
+    {
+        PushCommand(Instance& instance, TTimeUnit timestamp);
+        bool operator<(PushCommand const& other) const;
+
+        Instance instance;
+        TTimeUnit timestamp;
+    };
+
+    std::priority_queue<PushCommand> m_pushes;
 
 };
 

@@ -11,6 +11,8 @@
 
 #include <sleipnir/ecs/Types.hpp>
 
+#include <pegasus/Scene.hpp>
+
 #include <Arion/Shape.hpp>
 
 namespace sleipnir

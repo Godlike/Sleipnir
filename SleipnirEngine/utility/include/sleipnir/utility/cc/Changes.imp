@@ -18,56 +18,56 @@ namespace cc
 
 //! Changes::Instance
 
-template<typename TMemento>
-    bool Changes<TMemento>::Instance::IsEmpty() const
+template<typename TMemento, typename TTimeUnit>
+    bool Changes<TMemento, TTimeUnit>::Instance::IsEmpty() const
     {
         return m_add.empty() && m_modify.empty() && m_delete.empty();
     }
 
-template<typename TMemento>
-    bool Changes<TMemento>::Instance::operator<(Changes<TMemento>::Instance const& other) const
+template<typename TMemento, typename TTimeUnit>
+    bool Changes<TMemento, TTimeUnit>::Instance::operator<(Changes<TMemento, TTimeUnit>::Instance const& other) const
     {
         return m_priority < other.m_priority;
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Instance::Add(Changes<TMemento>::Snapshot entry)
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Instance::Add(Changes<TMemento, TTimeUnit>::Snapshot entry)
     {
         m_add.push_back(entry);
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Instance::Modify(Changes<TMemento>::Snapshot entry, Changes<TMemento>::ModifyOperation operation)
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Instance::Modify(Changes<TMemento, TTimeUnit>::Snapshot entry, Changes<TMemento, TTimeUnit>::ModifyOperation operation)
     {
         m_modify.emplace_back(entry, operation);
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Instance::Delete(Changes<TMemento>::Snapshot entry)
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Instance::Delete(Changes<TMemento, TTimeUnit>::Snapshot entry)
     {
         m_delete.push_back(entry);
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Instance::Reset()
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Instance::Reset()
     {
         m_add.clear();
         m_modify.clear();
         m_delete.clear();
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Instance::Push()
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Instance::Push(TTimeUnit timestamp)
     {
         assert(nullptr != m_pParent);
 
-        m_pParent->Push(*this);
+        m_pParent->Push(*this, timestamp);
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Instance::Export(Changes<TMemento>::AddCollection& adds
-        , Changes<TMemento>::ModifyCollection& modifies
-        , Changes<TMemento>::DeleteCollection& deletes
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Instance::Export(Changes<TMemento, TTimeUnit>::AddCollection& adds
+        , Changes<TMemento, TTimeUnit>::ModifyCollection& modifies
+        , Changes<TMemento, TTimeUnit>::DeleteCollection& deletes
     )
     {
         adds.clear();
@@ -79,15 +79,15 @@ template<typename TMemento>
         m_delete.swap(deletes);
     }
 
-template<typename TMemento>
-    Changes<TMemento>::Instance::Instance(Changes<TMemento>* pParent, uint16_t priority)
+template<typename TMemento, typename TTimeUnit>
+    Changes<TMemento, TTimeUnit>::Instance::Instance(Changes<TMemento, TTimeUnit>* pParent, uint16_t priority)
         : m_pParent(pParent)
         , m_priority(priority)
     {
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Instance::Merge(Changes<TMemento>::Instance const& other)
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Instance::Merge(Changes<TMemento, TTimeUnit>::Instance const& other)
     {
         m_add.insert(m_add.cend(), other.m_add.cbegin(), other.m_add.cend());
         m_modify.insert(m_modify.cend(), other.m_modify.cbegin(), other.m_modify.cend());
@@ -96,20 +96,20 @@ template<typename TMemento>
 
 // Changes::Integrator
 
-template<typename TMemento> template<class TCollection>
-    Changes<TMemento>::Integrator<TCollection>::Integrator(TCollection& collection)
+template<typename TMemento, typename TTimeUnit> template<class TCollection>
+    Changes<TMemento, TTimeUnit>::Integrator<TCollection>::Integrator(TCollection& collection)
     : m_collection(collection)
     {
     }
 
-template<typename TMemento> template<class TCollection>
-    void Changes<TMemento>::Integrator<TCollection>::Integrate(Changes<TMemento>::Instance& diff)
+template<typename TMemento, typename TTimeUnit> template<class TCollection>
+    void Changes<TMemento, TTimeUnit>::Integrator<TCollection>::Integrate(Changes<TMemento, TTimeUnit>::Instance& diff)
     {
         using Object = typename TCollection::Object;
 
-        typename Changes<TMemento>::AddCollection adds;
-        typename Changes<TMemento>::ModifyCollection modifies;
-        typename Changes<TMemento>::DeleteCollection deletes;
+        typename Changes<TMemento, TTimeUnit>::AddCollection adds;
+        typename Changes<TMemento, TTimeUnit>::ModifyCollection modifies;
+        typename Changes<TMemento, TTimeUnit>::DeleteCollection deletes;
 
         diff.Export(adds, modifies, deletes);
 
@@ -134,18 +134,18 @@ template<typename TMemento> template<class TCollection>
         }
     }
 
-template<typename TMemento>
-    typename Changes<TMemento>::Instance Changes<TMemento>::Clone(uint16_t priority)
+template<typename TMemento, typename TTimeUnit>
+    typename Changes<TMemento, TTimeUnit>::Instance Changes<TMemento, TTimeUnit>::Clone(uint16_t priority)
     {
-        using Instance = Changes<TMemento>::Instance;
+        using Instance = Changes<TMemento, TTimeUnit>::Instance;
 
         return Instance(this, priority);
     }
 
-template<typename TMemento>
-    void Changes<TMemento>::Push(Changes<TMemento>::Instance& instance)
+template<typename TMemento, typename TTimeUnit>
+    void Changes<TMemento, TTimeUnit>::Push(Changes<TMemento, TTimeUnit>::Instance& instance, TTimeUnit timestamp)
     {
-        using Instance = Changes<TMemento>::Instance;
+        using Instance = Changes<TMemento, TTimeUnit>::Instance;
 
         Instance tmp(instance.m_pParent, instance.m_priority);
         std::swap(tmp, instance);
@@ -153,14 +153,14 @@ template<typename TMemento>
         {
             std::lock_guard<std::mutex> lock(m_hostMutex);
 
-            m_pushes.push(tmp);
+            m_pushes.emplace(tmp, timestamp);
         }
     }
 
-template<typename TMemento>
-    typename Changes<TMemento>::Instance Changes<TMemento>::Pull()
+template<typename TMemento, typename TTimeUnit>
+    typename Changes<TMemento, TTimeUnit>::Instance Changes<TMemento, TTimeUnit>::Pull(TTimeUnit timestamp)
     {
-        using Instance = Changes<TMemento>::Instance;
+        using Instance = Changes<TMemento, TTimeUnit>::Instance;
 
         std::priority_queue<Instance> pending;
 
@@ -174,11 +174,33 @@ template<typename TMemento>
 
         while (!pending.empty())
         {
-            result.Merge(pending.top());
-            pending.pop();
+            if (pending.top().timestamp <= timestamp)
+            {
+                result.Merge(pending.top().instance);
+                pending.pop();
+            }
+            else
+            {
+                break;
+            }
         }
 
         return result;
+    }
+
+template<typename TMemento, typename TTimeUnit>
+    Changes<TMemento, TTimeUnit>::PushCommand::PushCommand(Instance& instance, TTimeUnit timestamp)
+        : instance(instance)
+        , timestamp(timestamp)
+    {}
+
+template<typename TMemento, typename TTimeUnit>
+    bool Changes<TMemento, TTimeUnit>::PushCommand::operator<(PushCommand const& other) const
+    {
+        return timestamp != other.timestamp
+            ? timestamp < other.timestamp
+            : instance < other.instance
+        ;
     }
 
 }
