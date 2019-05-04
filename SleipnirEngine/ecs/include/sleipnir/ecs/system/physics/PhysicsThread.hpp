@@ -12,12 +12,9 @@
 #include <sleipnir/ecs/system/physics/BodyController.hpp>
 #include <sleipnir/ecs/system/physics/BodyHandle.hpp>
 #include <sleipnir/ecs/system/physics/DynamicForceController.hpp>
-#include <sleipnir/ecs/system/physics/PegasusAdapter.hpp>
-#include <sleipnir/ecs/system/physics/PegasusPrimitives.hpp>
+#include <sleipnir/ecs/system/physics/Engine.hpp>
 
 #include <sleipnir/utility/QSBR.hpp>
-
-#include <sleipnir/utility/cc/Changes.hpp>
 
 #include <atomic>
 #include <thread>
@@ -45,9 +42,6 @@ public:
     //! QSBR section id for @ref memoryReclaimer
     using SectionIndex = utility::QSBR::SectionIndex;
 
-    //! Shortcut to change control repo
-    using ChangeControl = utility::cc::Changes<BodyMemento>;
-
     /** @brief  Basic constructor
      *
      *  @param  worldTime   time holder
@@ -69,29 +63,8 @@ public:
     //! Returns latest state of QSBR controlled body positions
     BodyPositions* GetBodyPositions() const;
 
-    /** @brief  Creates gravity source in physics engine
-     *
-     *  @param  id          force id
-     *  @param  position    gravity source position in world
-     *  @param  magnitude   gravity pull strength
-     *
-     *  @sa DeleteGravitySource()
-     */
-    void CreateGravitySource(uint32_t id, glm::vec3 position, double magnitude);
-
-    /** @brief  Deletes gravity source from physics engine
-     *
-     *  @param  id  force id
-     *
-     *  @sa CreateGravitySource()
-     */
-    void DeleteGravitySource(uint32_t id);
-
     //! Returns current time in physics world
     WorldTime::TimeUnit GetCurrentTime() const;
-
-    //! Generates change control instance
-    ChangeControl::Instance CloneChanges(uint16_t priority = 0x8000);
 
     //! QSBR memory reclaimer controlling @ref BodyPositions
     utility::QSBR memoryReclaimer;
@@ -146,13 +119,8 @@ private:
     std::atomic<BodyPositions*> m_currentPositions;
 
     //! Physics engine adapter
-    PegasusAdapter m_physicsEngine;
+    Engine m_physicsEngine;
 
-    //! Force controller
-    DynamicForceController m_dynamicForceController;
-
-    //! Change controller
-    ChangeControl::Instance m_changeControl;
 };
 
 } // namespace physics

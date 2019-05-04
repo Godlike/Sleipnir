@@ -3,6 +3,7 @@
 
 #include <sleipnir/utility/cc/Changes.hpp>
 
+#include <atomic>
 #include <cstdint>
 #include <vector>
 
@@ -41,13 +42,15 @@ struct Position
     Position& operator*=(int32_t offset);
 };
 
+using Handle = uint16_t;
+
 class Object;
 class ObjectCollection;
 
 struct ObjectMemento
 {
     using Object = ccTestUtils::Object;
-    constexpr static uint16_t INVALID_ID = 0xFFFF;
+    constexpr static Handle INVALID_ID = 0xFFFF;
 
     bool operator==(ObjectMemento const& other) const
     {
@@ -59,18 +62,23 @@ struct ObjectMemento
         ;
     }
 
-    uint16_t id = INVALID_ID;
+    Handle id = INVALID_ID;
 
     std::pair<bool, Position> pos;
     std::pair<bool, int32_t> mass;
 };
 
+struct ObjectHandle
+{
+    std::atomic<Handle> handle = ObjectMemento::INVALID_ID;
+};
+
 class Object
 {
 public:
-    constexpr static uint16_t INVALID_ID = ObjectMemento::INVALID_ID;
+    constexpr static Handle INVALID_ID = ObjectMemento::INVALID_ID;
 
-    uint16_t GetId() const { return m_id; }
+    Handle GetId() const { return m_id; }
     Position GetPosition() const { return m_pos; }
     int32_t GetMass() const { return m_mass; }
 
@@ -85,12 +93,12 @@ private:
 
     Object(ObjectMemento const& memento, ObjectCollection* parent = nullptr);
 
-    void SetId(uint16_t id) { m_id = id; }
+    void SetId(Handle id) { m_id = id; }
     void SetPos(Position const& pos) { m_pos = pos; }
     void SetMass(int32_t mass) { m_mass = mass; }
 
     ObjectCollection* m_pParent;
-    uint16_t m_id;
+    Handle m_id;
 
     Position m_pos;
     int32_t m_mass;
@@ -103,16 +111,16 @@ public:
 
     ObjectCollection();
 
-    Object* Spawn(ObjectMemento const& memento);
-    Object* Get(ObjectMemento const& memento) const;
-    bool Delete(ObjectMemento const& memento);
+    Object* Spawn(ObjectHandle* pHandle, ObjectMemento const& memento);
+    Object* Get(ObjectHandle* pHandle) const;
+    bool Delete(ObjectHandle* pHandle);
 
 private:
-    std::vector<Object*> m_collection;
-    uint16_t m_idCounter;
+    std::unordered_map<ObjectHandle*, Object*> m_collection;
+    Handle m_idCounter;
 };
 
-using ObjectChanges = sleipnir::utility::cc::Changes<ObjectMemento>;
+using ObjectChanges = sleipnir::utility::cc::Changes<ObjectMemento, ObjectHandle*>;
 using ObjectIntegrator = ObjectChanges::Integrator<ObjectCollection>;
 
 }

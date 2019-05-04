@@ -31,7 +31,6 @@ PhysicsThread::PhysicsThread(WorldTime& worldTime)
     , m_timeControl(worldTime)
     , m_currentPositions(nullptr)
     , m_physicsEngine(m_changeControl)
-    , m_dynamicForceController(m_physicsEngine)
     , m_changeControl()
 {
     m_currentPositions.store(new BodyPositions(), std::memory_order_release);

@@ -108,10 +108,12 @@ SCENARIO("Collection operations", "[collection]")
 
         WHEN("creating objects")
         {
+            ObjectHandle objAHandle;
+            ObjectHandle objBHandle;
             ObjectMemento memento;
 
-            Object* pObjA = collection.Spawn(memento);
-            Object* pObjB = collection.Spawn(memento);
+            Object* pObjA = collection.Spawn(&objAHandle, memento);
+            Object* pObjB = collection.Spawn(&objBHandle, memento);
 
             REQUIRE(nullptr != pObjA);
             REQUIRE(nullptr != pObjB);
@@ -121,23 +123,21 @@ SCENARIO("Collection operations", "[collection]")
                 REQUIRE((*pObjA) != (*pObjB));
             }
 
-            THEN("they can be accessed via Get() of their identifiable memento")
+            THEN("they can be accessed via Get() of their handle")
             {
-                memento.id = pObjA->GetId();
-
-                Object* pObjGet = collection.Get(memento);
+                Object* pObjGet = collection.Get(&objAHandle);
 
                 REQUIRE(nullptr != pObjGet);
                 REQUIRE((*pObjA) == (*pObjGet));
             }
 
-            THEN("they can be deleted via Delete() of their identifiable memento")
+            THEN("they can be deleted via Delete() of their handle")
             {
-                memento.id = pObjA->GetId();
-
-                bool res = collection.Delete(memento);
+                bool res = collection.Delete(&objAHandle);
+                Object* pObjGet = collection.Get(&objAHandle);
 
                 REQUIRE(true == res);
+                REQUIRE(nullptr == pObjGet);
             }
         }
     }
@@ -149,10 +149,12 @@ SCENARIO("Collection operations", "[collection]")
 
         WHEN("creating objects in each")
         {
+            ObjectHandle objAHandle;
+            ObjectHandle objBHandle;
             ObjectMemento memento;
 
-            Object* pObjA = collectionA.Spawn(memento);
-            Object* pObjB = collectionB.Spawn(memento);
+            Object* pObjA = collectionA.Spawn(&objAHandle, memento);
+            Object* pObjB = collectionB.Spawn(&objBHandle, memento);
 
             REQUIRE(nullptr != pObjA);
             REQUIRE(nullptr != pObjB);
@@ -177,13 +179,14 @@ SCENARIO("Object-memento operations", "[object]")
     GIVEN("collection and memento")
     {
         ObjectCollection collection;
+        ObjectHandle handle;
         ObjectMemento memento;
         memento.pos = {true, Position{ 1, 2, 3 } };
         memento.mass = {true, 4};
 
         WHEN("we create an object")
         {
-            Object* pObj = collection.Spawn(memento);
+            Object* pObj = collection.Spawn(&handle, memento);
             REQUIRE(nullptr != pObj);
 
             THEN("it inherits memento properties")
@@ -195,7 +198,7 @@ SCENARIO("Object-memento operations", "[object]")
 
         WHEN("we create an object and add a memento to it")
         {
-            Object* pObj = collection.Spawn(memento);
+            Object* pObj = collection.Spawn(&handle, memento);
             REQUIRE(nullptr != pObj);
 
             *pObj += memento;
@@ -209,7 +212,7 @@ SCENARIO("Object-memento operations", "[object]")
 
         WHEN("we create an object and multiply it by a memento")
         {
-            Object* pObj = collection.Spawn(memento);
+            Object* pObj = collection.Spawn(&handle, memento);
             REQUIRE(nullptr != pObj);
 
             *pObj *= memento;

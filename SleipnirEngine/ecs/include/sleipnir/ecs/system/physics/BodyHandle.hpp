@@ -7,9 +7,9 @@
 #ifndef SLEIPNIR_ECS_SYSTEM_PHYSICS_BODY_HANDLE_HPP
 #define SLEIPNIR_ECS_SYSTEM_PHYSICS_BODY_HANDLE_HPP
 
-#include <atomic>
+#include <sleipnir/ecs/system/physics/adapter/pegasus/BodyHandle.hpp>
 
-#include <pegasus/Scene.hpp>
+#include <atomic>
 
 namespace sleipnir
 {
@@ -20,12 +20,7 @@ namespace system
 namespace physics
 {
 
-//! Holds pegasus body handle
-struct BodyHandle
-{
-    //! Atomic pegasus body handle
-    std::atomic<pegasus::scene::Handle> bodyHandle;
-};
+using BodyHandle = adapter::pegasus::BodyHandle;
 
 } // namespace physics
 } // namespace system

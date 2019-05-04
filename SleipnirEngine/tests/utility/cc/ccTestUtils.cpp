@@ -1,6 +1,7 @@
 #include "ccTestUtils.hpp"
 
 #include <algorithm>
+#include <cassert>
 
 namespace ccTestUtils
 {
@@ -155,37 +156,37 @@ ObjectCollection::ObjectCollection()
     : m_idCounter(0)
 {}
 
-Object* ObjectCollection::Spawn(ObjectMemento const& memento)
+Object* ObjectCollection::Spawn(ObjectHandle* pHandle, ObjectMemento const& memento)
 {
-    Object* pObj = new Object(memento, this);
-    pObj->SetId(m_idCounter++);
+    assert(nullptr == Get(pHandle));
 
-    m_collection.push_back(pObj);
+    Object* pObj = new Object(memento, this);
+
+    pObj->SetId(m_idCounter);
+    pHandle->handle = m_idCounter;
+
+    ++m_idCounter;
+
+    m_collection.insert({pHandle, pObj});
 
     return pObj;
 
 }
 
-Object* ObjectCollection::Get(ObjectMemento const& memento) const
+Object* ObjectCollection::Get(ObjectHandle* pHandle) const
 {
-    auto it = std::find_if(m_collection.cbegin(), m_collection.cend(), [id = memento.id](Object* const& pObj) -> bool
-        {
-            return ((nullptr != pObj)
-                ? (pObj->GetId() == id)
-                : false);
-        });
+    auto it = m_collection.find(pHandle);
 
-    return (it != m_collection.cend() ? (*it) : nullptr);
+    return (it != m_collection.cend() ? it->second : nullptr);
 }
 
-bool ObjectCollection::Delete(ObjectMemento const& memento)
+bool ObjectCollection::Delete(ObjectHandle* pHandle)
 {
-    Object* pObj = Get(memento);
+    Object* pObj = Get(pHandle);
 
     if (nullptr != pObj)
     {
-        auto it = std::find_if(m_collection.begin(), m_collection.end(), [=](Object* const& _pObj) -> bool { return _pObj == pObj; });
-        m_collection.erase(it);
+        m_collection.erase(pHandle);
 
         delete pObj;
 

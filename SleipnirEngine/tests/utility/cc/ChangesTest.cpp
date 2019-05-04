@@ -63,7 +63,7 @@ SCENARIO("Basic Changes::Instance", "[general]")
             {
                 REQUIRE(false == instance.IsEmpty());
 
-                instance.Push();
+                instance.Push(ObjectChanges::TimeUnit{0});
 
                 REQUIRE(true == instance.IsEmpty());
             }
@@ -82,7 +82,7 @@ SCENARIO("Basic Changes::Instance", "[general]")
         {
             ObjectMemento memento;
 
-            instance.Modify(memento, &Object::operator+=);
+            instance.Modify(nullptr, memento, &Object::operator+=);
 
             THEN("instance is no longer empty")
             {
@@ -111,7 +111,7 @@ SCENARIO("Basic Changes::Instance", "[general]")
             {
                 REQUIRE(false == instance.IsEmpty());
 
-                instance.Push();
+                instance.Push(ObjectChanges::TimeUnit{0});
 
                 REQUIRE(true == instance.IsEmpty());
             }
@@ -128,9 +128,7 @@ SCENARIO("Basic Changes::Instance", "[general]")
 
         WHEN("deleting")
         {
-            ObjectMemento memento;
-
-            instance.Delete(memento);
+            instance.Delete(nullptr);
 
             THEN("instance is no longer empty")
             {
@@ -159,7 +157,7 @@ SCENARIO("Basic Changes::Instance", "[general]")
             {
                 REQUIRE(false == instance.IsEmpty());
 
-                instance.Push();
+                instance.Push(ObjectChanges::TimeUnit{0});
 
                 REQUIRE(true == instance.IsEmpty());
             }
@@ -193,24 +191,23 @@ SCENARIO("Basic Changes::Instance", "[general]")
 
         ObjectMemento addMemento;
         addMemento.pos = {true, Position{ 0, 1, 0 } };
-        instance.Add(addMemento);
+        ObjectHandle* addHandle = instance.Add(addMemento);
 
         ObjectChanges::ModifyOperation modOp = &Object::operator+=;
 
+        ObjectHandle* modifyHandle1 = new ObjectHandle{1};
         ObjectMemento modifyMemento1;
-        modifyMemento1.id = 1;
         modifyMemento1.pos = {true, Position{ -1, -1, -1 } };
         modifyMemento1.mass = {true, 10};
 
+        ObjectHandle* modifyHandle2 = new ObjectHandle{2};
         ObjectMemento modifyMemento2;
-        modifyMemento2.id = 2;
         modifyMemento2.mass = {true, 10};
-        instance.Modify(modifyMemento1, modOp);
-        instance.Modify(modifyMemento2, modOp);
+        instance.Modify(modifyHandle1, modifyMemento1, modOp);
+        instance.Modify(modifyHandle2, modifyMemento2, modOp);
 
-        ObjectMemento deleteMemento;
-        deleteMemento.id = 0;
-        instance.Delete(deleteMemento);
+        ObjectHandle* deleteHandle = new ObjectHandle{0};
+        instance.Delete(deleteHandle);
 
         REQUIRE(false == instance.IsEmpty());
 
@@ -273,15 +270,16 @@ SCENARIO("Basic Changes::Instance", "[general]")
 
                 instanceMove.Export(adds, modifies, deletes);
 
-                REQUIRE(adds.at(0) == addMemento);
+                REQUIRE(adds.cend() != adds.find(addHandle));
+                REQUIRE(adds[addHandle] == addMemento);
 
-                REQUIRE(modifies.at(0).first == modifyMemento1);
-                REQUIRE(modifies.at(0).second == modOp);
+                REQUIRE(modifies.cend() != modifies.find(modifyHandle1));
+                REQUIRE(std::get<1>(modifies[modifyHandle1]) == modOp);
 
-                REQUIRE(modifies.at(1).first == modifyMemento2);
-                REQUIRE(modifies.at(1).second == modOp);
+                REQUIRE(modifies.cend() != modifies.find(modifyHandle2));
+                REQUIRE(std::get<1>(modifies[modifyHandle2]) == modOp);
 
-                REQUIRE(deletes.at(0) == deleteMemento);
+                REQUIRE(deletes.at(0) == deleteHandle);
             }
         }
 
@@ -302,15 +300,16 @@ SCENARIO("Basic Changes::Instance", "[general]")
 
                 instanceMove.Export(adds, modifies, deletes);
 
-                REQUIRE(adds.at(0) == addMemento);
+                REQUIRE(adds.cend() != adds.find(addHandle));
+                REQUIRE(adds[addHandle] == addMemento);
 
-                REQUIRE(modifies.at(0).first == modifyMemento1);
-                REQUIRE(modifies.at(0).second == modOp);
+                REQUIRE(modifies.cend() != modifies.find(modifyHandle1));
+                REQUIRE(std::get<1>(modifies[modifyHandle1]) == modOp);
 
-                REQUIRE(modifies.at(1).first == modifyMemento2);
-                REQUIRE(modifies.at(1).second == modOp);
+                REQUIRE(modifies.cend() != modifies.find(modifyHandle2));
+                REQUIRE(std::get<1>(modifies[modifyHandle2]) == modOp);
 
-                REQUIRE(deletes.at(0) == deleteMemento);
+                REQUIRE(deletes.at(0) == deleteHandle);
             }
         }
 
@@ -376,13 +375,13 @@ SCENARIO("Integration of Changes::Instance", "[general]")
             modifyMemento.pos = {true, Position{ -1, -1, -1 } };
             modifyMemento.mass = {true, 10};
 
-            instance.Add(addMemento);
-            instance.Add(addMemento);
-            instance.Modify(modifyMemento, &Object::operator+=);
+            ObjectHandle* addHandle0 = instance.Add(addMemento);
+            ObjectHandle* addHandle1 = instance.Add(addMemento);
+            instance.Modify(addHandle1, modifyMemento, &Object::operator+=);
 
             REQUIRE(false == instance.IsEmpty());
 
-            instance.Push();
+            instance.Push(ObjectChanges::TimeUnit{0});
 
             THEN("instance becomes empty")
             {
@@ -404,12 +403,18 @@ SCENARIO("Integration of Changes::Instance", "[general]")
 
                 integrator.Integrate(remote);
 
-                Object* pObj = collection.Get(modifyMemento);
+                Object* pObj0 = collection.Get(addHandle0);
+                REQUIRE(nullptr != pObj0);
 
-                REQUIRE(nullptr != pObj);
+                REQUIRE(pObj0->GetPosition() == addMemento.pos.second);
+                REQUIRE(pObj0->GetMass() == addMemento.mass.second);
 
-                REQUIRE(pObj->GetPosition() == (addMemento.pos.second + modifyMemento.pos.second));
-                REQUIRE(pObj->GetMass() == modifyMemento.mass.second);
+                Object* pObj1 = collection.Get(addHandle1);
+
+                REQUIRE(nullptr != pObj1);
+
+                REQUIRE(pObj1->GetPosition() == (addMemento.pos.second + modifyMemento.pos.second));
+                REQUIRE(pObj1->GetMass() == modifyMemento.mass.second);
             }
 
             THEN("every integration operates on current state of the collection")
@@ -418,28 +423,25 @@ SCENARIO("Integration of Changes::Instance", "[general]")
 
                 integrator.Integrate(remote);
 
-                ObjectMemento deleteMemento;
-                deleteMemento.id = 0;
-
                 INFO("object is accessible before we integrate deletion");
 
-                Object* pObj = collection.Get(deleteMemento);
+                Object* pObj = collection.Get(addHandle0);
                 REQUIRE(nullptr != pObj);
 
-                instance.Modify(modifyMemento, &Object::operator*=);
-                instance.Delete(deleteMemento);
+                instance.Modify(addHandle1, modifyMemento, &Object::operator*=);
+                instance.Delete(addHandle0);
 
-                instance.Push();
+                instance.Push(ObjectChanges::TimeUnit{0});
 
                 remote = changes.Pull();
                 integrator.Integrate(remote);
 
                 INFO("object is not accessible after integrating deletion");
 
-                pObj = collection.Get(deleteMemento);
+                pObj = collection.Get(addHandle0);
                 REQUIRE(nullptr == pObj);
 
-                pObj = collection.Get(modifyMemento);
+                pObj = collection.Get(addHandle1);
 
                 REQUIRE(nullptr != pObj);
                 REQUIRE(pObj->GetPosition() == (addMemento.pos.second + modifyMemento.pos.second) * modifyMemento.pos.second);

@@ -4,12 +4,10 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#ifndef SLEIPNIR_ECS_SYSTEM_PHYSICS_PEGASUS_ADAPTER_HPP
-#define SLEIPNIR_ECS_SYSTEM_PHYSICS_PEGASUS_ADAPTER_HPP
+#ifndef SLEIPNIR_ECS_SYSTEM_PHYSICS_ADAPTER_PEGASUS_ENGINE_HPP
+#define SLEIPNIR_ECS_SYSTEM_PHYSICS_ADAPTER_PEGASUS_ENGINE_HPP
 
 #include <sleipnir/ecs/WorldTime.hpp>
-
-#include <sleipnir/ecs/system/physics/SpawnInfo.hpp>
 
 #include <pegasus/Scene.hpp>
 #include <pegasus/Primitives.hpp>
@@ -33,17 +31,17 @@ namespace physics
  *
  *  Exposes operations usable through Sleipnir
  */
-class PegasusAdapter
+class Engine
 {
 public:
     //! Shortcut to a collection of pegasus::scene::Primitive pointers
     using Primitives = std::list<pegasus::scene::Primitive*>;
 
     //! Basic constructor
-    PegasusAdapter();
+    Engine();
 
     //! Default destructor
-    ~PegasusAdapter() = default;
+    ~Engine() = default;
 
     //! Initialize default pegasus state
     void Initialize();
@@ -116,4 +114,4 @@ private:
 } // namespace ecs
 } // namespace sleipnir
 
-#endif // SLEIPNIR_ECS_SYSTEM_PHYSICS_PEGASUS_ADAPTER_HPP
+#endif // SLEIPNIR_ECS_SYSTEM_PHYSICS_ADAPTER_PEGASUS_ENGINE_HPP

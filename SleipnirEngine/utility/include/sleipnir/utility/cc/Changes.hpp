@@ -11,7 +11,8 @@
 
 #include <mutex>
 #include <queue>
-#include <utility>
+#include <tuple>
+#include <unordered_map>
 #include <vector>
 
 namespace sleipnir
@@ -21,17 +22,29 @@ namespace utility
 namespace cc
 {
 
-template<typename TMemento, typename TTimeUnit = ecs::WorldTime::TimeUnit>
+template<
+    typename TMemento
+    , typename THandle
+    , typename TTimeUnit = ecs::WorldTime::TimeUnit
+    , typename THandleCreator = THandle(*)()
+    , typename THandleDeleter = void(*)(THandle)
+>
 class Changes
 {
 public:
     using Snapshot = TMemento;
+
+    using Handle = THandle;
+    using TimeUnit = TTimeUnit;
+    using HandleCreator = THandleCreator;
+    using HandleDeleter = THandleDeleter;
+
     using Object = typename Snapshot::Object;
     using ModifyOperation = Object& (Object::*)(Snapshot const&);
 
-    using AddCollection = std::vector<Snapshot>;
-    using ModifyCollection = std::vector< std::pair<Snapshot, ModifyOperation> >;
-    using DeleteCollection = std::vector<Snapshot>;
+    using AddCollection = std::unordered_map<Handle, Snapshot>;
+    using ModifyCollection = std::unordered_map<Handle, std::tuple<Snapshot, ModifyOperation> >;
+    using DeleteCollection = std::vector<Handle>;
 
     class Instance
     {
@@ -47,13 +60,13 @@ public:
         bool IsEmpty() const;
         uint16_t GetPriority() const { return m_priority; }
 
-        void Add(Snapshot entry);
-        void Modify(Snapshot entry, ModifyOperation operation);
-        void Delete(Snapshot entry);
+        Handle Add(Snapshot entry);
+        void Modify(Handle handle, Snapshot entry, ModifyOperation operation);
+        void Delete(Handle handle);
 
         void Reset();
 
-        void Push(TTimeUnit timestamp);
+        void Push(TimeUnit timestamp);
 
         void Export(AddCollection& adds, ModifyCollection& modifies, DeleteCollection& deletes);
 
@@ -76,15 +89,16 @@ public:
     class Integrator
     {
     public:
-        Integrator(TCollection& collection);
+        Integrator(TCollection& collection, HandleDeleter deleter = [](Handle handle) -> void { if constexpr (std::is_pointer_v<Handle>) { delete handle; } });
 
         void Integrate(Changes::Instance& diff);
 
     private:
         TCollection& m_collection;
+        HandleDeleter m_handleDeleter;
     };
 
-    Changes() = default;
+    Changes(HandleCreator creator = []() -> Handle { if constexpr (std::is_pointer_v<Handle>) { return new typename std::remove_reference<decltype(*Handle())>::type; } else { return Handle(); } });
 
     Changes(Changes const& other) = delete;
     Changes& operator=(Changes const& other) = delete;
@@ -94,22 +108,24 @@ public:
 
     ~Changes() = default;
 
-    Instance Clone(uint16_t priority = 0x8000);
+    Instance Clone(uint16_t priority = 0x8000) const;
 
-    void Push(Instance& instance, TTimeUnit timestamp);
+    void Push(Instance& instance, TimeUnit timestamp);
 
-    Instance Pull(TTimeUnit timestamp);
+    Instance Pull(TimeUnit timestamp = TimeUnit::max());
 
 private:
+    HandleCreator m_handleCreator;
+
     std::mutex m_hostMutex;
 
     struct PushCommand
     {
-        PushCommand(Instance& instance, TTimeUnit timestamp);
+        PushCommand(Instance& instance, TimeUnit timestamp);
         bool operator<(PushCommand const& other) const;
 
         Instance instance;
-        TTimeUnit timestamp;
+        TimeUnit timestamp;
     };
 
     std::priority_queue<PushCommand> m_pushes;

@@ -4,19 +4,24 @@
 * (http://opensource.org/licenses/MIT)
 */
 
-#ifndef SLEIPNIR_ECS_SYSTEM_PHYSICS_PEGASUS_PRIMITIVES_HPP
-#define SLEIPNIR_ECS_SYSTEM_PHYSICS_PEGASUS_PRIMITIVES_HPP
-
-#include <utility>
+#ifndef SLEIPNIR_ECS_SYSTEM_PHYSICS_ADAPTER_PEGASUS_BODY_HPP
+#define SLEIPNIR_ECS_SYSTEM_PHYSICS_ADAPTER_PEGASUS_BODY_HPP
 
 #include <pegasus/Asset.hpp>
 #include <pegasus/Scene.hpp>
+
+#include <utility>
+#include <unordered_map>
 
 namespace sleipnir
 {
 namespace ecs
 {
 namespace system
+{
+namespace physics
+{
+namespace adapter
 {
 namespace physics
 {
@@ -37,22 +42,22 @@ struct BodyMemento
 
     struct LinearMotion
     {
-        glm::vec3 position = {0};
-        glm::vec3 velocity = {0};
-        glm::vec3 acceleration = {0};
-        glm::vec3 force = {0};
+        glm::vec3 position = glm::vec3{0};
+        glm::vec3 velocity = glm::vec3{0};
+        glm::vec3 acceleration = glm::vec3{0};
+        glm::vec3 force = glm::vec3{0};
     };
 
     struct AngularMotion
     {
-        glm::quat orientation = {0};
-        glm::vec3 velocity = {0};
-        glm::vec3 acceleration = {0};
-        glm::vec3 torque = {0};
+        glm::quat orientation = glm::vec3{0};
+        glm::vec3 velocity = glm::vec3{0};
+        glm::vec3 acceleration = glm::vec3{0};
+        glm::vec3 torque = glm::vec3{0};
     };
 
     //! Pegasus body handle
-    pegasus::scene::Handle handle = Object::UNKNOWN_ID;
+    pegasus::scene::Handle handle = UNKNOWN_ID;
 
     //! Pointer to arion shape
     arion::SimpleShape* pShape = nullptr;
@@ -83,8 +88,6 @@ public:
     BodyObject(BodyObject&& other) = default;
     BodyObject& operator=(BodyObject&& other) = default;
 
-    ~BodyObject() = default;
-
     BodyObject& operator+=(Memento const& memento);
     BodyObject& operator*=(Memento const& memento);
 
@@ -92,9 +95,11 @@ private:
     friend class BodyCollection;
 
     BodyObject(Memento const& memento, pegasus::scene::Scene& scene);
+    ~BodyObject();
 
     Handle m_handle;
     pegasus::scene::Scene& m_scene;
+    pegasus::scene::Primitive* m_pPrimitive;
 };
 
 class BodyCollection
@@ -124,7 +129,7 @@ private:
     pegasus::scene::Scene m_scene;
 
     //! Container for created objects
-    std::vector<Object*> m_collection;
+    std::unordered_map<BodyObject::Handle, Object*> m_collection;
 
     //! Collection of primitives
     Primitives m_primitives;
@@ -133,12 +138,11 @@ private:
     std::size_t m_primitiveCount;
 };
 
-using BodyChanges = sleipnir::utility::cc::Changes<BodyObject::Memento>;
-using BodyIntegrator = BodyChanges::Integrator<BodyCollection>;
+}
+}
+}
+}
+}
+}
 
-}
-}
-}
-}
-
-#endif // SLEIPNIR_ECS_SYSTEM_PHYSICS_PEGASUS_PRIMITIVES_HPP
+#endif // SLEIPNIR_ECS_SYSTEM_PHYSICS_ADAPTER_PEGASUS_BODY_HPP

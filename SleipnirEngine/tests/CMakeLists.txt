@@ -21,7 +21,7 @@ include(SleipnirBuildFlags)
 include_directories(${SLEIPNIR_INCLUDE_DIR} ${CATCH_ROOT}/single_include)
 
 function(sleipnir_add_test)
-    set(options )
+    set(options SKIP_LINK)
     set(oneValueArgs NAME TIMEOUT)
     set(multiValueArgs SOURCE ARGS)
     cmake_parse_arguments(
@@ -46,9 +46,16 @@ function(sleipnir_add_test)
         ${sleipnir_add_test_SOURCE}
     )
 
-    target_link_libraries(${EXEC_NAME}
-        Sleipnir::Engine
-    )
+    if (NOT sleipnir_add_test_SKIP_LINK)
+        target_link_libraries(${EXEC_NAME}
+            Sleipnir::Engine
+        )
+    else()
+        target_include_directories(${EXEC_NAME}
+            PUBLIC
+                $<TARGET_PROPERTY:Sleipnir::Engine,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+    endif()
 
     add_test(
         NAME ${sleipnir_add_test_NAME}
@@ -63,6 +70,7 @@ endfunction()
 
 sleipnir_add_test(NAME TemplateCounter
     SOURCE utility/TemplateCounterTest.cpp
+    SKIP_LINK
 )
 
 sleipnir_add_test(NAME ChangeControl_TestUtils
@@ -70,6 +78,7 @@ sleipnir_add_test(NAME ChangeControl_TestUtils
         utility/cc/ccTestUtilsTest.cpp
         utility/cc/ccTestUtils.hpp
         utility/cc/ccTestUtils.cpp
+    SKIP_LINK
 )
 
 sleipnir_add_test(NAME ChangeControl_Changes
@@ -77,4 +86,5 @@ sleipnir_add_test(NAME ChangeControl_Changes
         utility/cc/ChangesTest.cpp
         utility/cc/ccTestUtils.hpp
         utility/cc/ccTestUtils.cpp
+    SKIP_LINK
 )
