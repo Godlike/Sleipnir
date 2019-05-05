@@ -11,18 +11,6 @@
 
 #include <unordered_set>
 
-namespace
-{
-    template<typename TMap>
-        struct MapKeyIteratorHasher
-        {
-            std::size_t operator() (typename TMap::iterator const& it) const
-            {
-                return std::hash<typename TMap::key_type>{}(it->first);
-            }
-        };
-}
-
 namespace sleipnir
 {
 namespace utility
@@ -39,9 +27,9 @@ template<typename TMemento, typename THandle, typename TTimeUnit, typename THand
     }
 
 template<typename TMemento, typename THandle, typename TTimeUnit, typename THandleCreator, typename THandleDeleter>
-    bool Changes<TMemento, THandle, TTimeUnit, THandleCreator, THandleDeleter>::Instance::operator<(Instance const& other) const
+    bool Changes<TMemento, THandle, TTimeUnit, THandleCreator, THandleDeleter>::Instance::operator>(Instance const& other) const
     {
-        return m_priority < other.m_priority;
+        return m_priority > other.m_priority;
     }
 
 template<typename TMemento, typename THandle, typename TTimeUnit, typename THandleCreator, typename THandleDeleter>
@@ -134,33 +122,11 @@ template<typename TMemento, typename THandle, typename TTimeUnit, typename THand
 
         diff.Export(adds, modifies, deletes);
 
-        std::unordered_set<typename AddCollection::iterator
-            , MapKeyIteratorHasher<AddCollection>
-        > invalidatedAdds;
-
-        std::unordered_set<typename ModifyCollection::iterator
-            , MapKeyIteratorHasher<ModifyCollection>
-        > invalidatedModifies;
-
-        typename AddCollection::iterator addIt = adds.end();
-        typename AddCollection::iterator addEndIt = adds.end();
-        typename ModifyCollection::iterator modifyIt = modifies.end();
-        typename ModifyCollection::iterator modifyEndIt = modifies.end();
-
         // deletes
         for (Handle _delete : deletes)
         {
-            addIt = adds.find(_delete);
-            if (addEndIt != addIt)
-            {
-                invalidatedAdds.insert(addIt);
-            }
-
-            modifyIt = modifies.find(_delete);
-            if (modifyEndIt != modifyIt)
-            {
-                invalidatedModifies.insert(modifyIt);
-            }
+            adds.erase(_delete);
+            modifies.erase(_delete);
 
             m_collection.Delete(_delete);
 
@@ -168,22 +134,12 @@ template<typename TMemento, typename THandle, typename TTimeUnit, typename THand
         }
 
         // adds
-        for (auto& it : invalidatedAdds)
-        {
-            adds.erase(it);
-        }
-
         for (auto const& _add : adds)
         {
             m_collection.Spawn(_add.first, _add.second);
         }
 
         // modifies
-        for (auto& it : invalidatedModifies)
-        {
-            modifies.erase(it);
-        }
-
         for (auto const& _modify : modifies)
         {
             Object* pObj = m_collection.Get(_modify.first);
@@ -228,9 +184,7 @@ template<typename TMemento, typename THandle, typename TTimeUnit, typename THand
 template<typename TMemento, typename THandle, typename TTimeUnit, typename THandleCreator, typename THandleDeleter>
     typename Changes<TMemento, THandle, TTimeUnit, THandleCreator, THandleDeleter>::Instance Changes<TMemento, THandle, TTimeUnit, THandleCreator, THandleDeleter>::Pull(TTimeUnit timestamp)
     {
-        using PushCommand = typename Changes<TMemento, THandle, TTimeUnit, THandleCreator, THandleDeleter>::PushCommand;
-
-        std::priority_queue<PushCommand> pending;
+        PushPriorityQueue pending;
 
         {
             std::lock_guard<std::mutex> lock(m_hostMutex);
@@ -274,11 +228,11 @@ template<typename TMemento, typename THandle, typename TTimeUnit, typename THand
     {}
 
 template<typename TMemento, typename THandle, typename TTimeUnit, typename THandleCreator, typename THandleDeleter>
-    bool Changes<TMemento, THandle, TTimeUnit, THandleCreator, THandleDeleter>::PushCommand::operator<(PushCommand const& other) const
+    bool Changes<TMemento, THandle, TTimeUnit, THandleCreator, THandleDeleter>::PushCommand::operator>(PushCommand const& other) const
     {
         return timestamp != other.timestamp
-            ? timestamp < other.timestamp
-            : instance < other.instance
+            ? timestamp > other.timestamp
+            : instance > other.instance
         ;
     }
 

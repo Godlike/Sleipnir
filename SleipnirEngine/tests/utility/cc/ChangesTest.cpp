@@ -4,6 +4,8 @@
 #include <sleipnir/utility/cc/Changes.hpp>
 #include "ccTestUtils.hpp"
 
+#include <numeric>
+
 SCENARIO("Basic Changes::Instance", "[general]")
 {
     using namespace ccTestUtils;
@@ -446,6 +448,70 @@ SCENARIO("Integration of Changes::Instance", "[general]")
                 REQUIRE(nullptr != pObj);
                 REQUIRE(pObj->GetPosition() == (addMemento.pos.second + modifyMemento.pos.second) * modifyMemento.pos.second);
                 REQUIRE(pObj->GetMass() == modifyMemento.mass.second * modifyMemento.mass.second);
+            }
+        }
+
+        WHEN("pulling operations")
+        {
+            ObjectMemento addMemento;
+            addMemento.pos = {true, Position{ 0, 1, 0 } };
+
+            ObjectMemento modifyMemento;
+            modifyMemento.id = 1;
+            modifyMemento.pos = {true, Position{ -1, -1, -1 } };
+            modifyMemento.mass = {true, 10};
+
+            std::array<std::size_t, 3> addCount = {0};
+            std::array<std::size_t, 3> modifyCount = {0};
+            std::array<std::size_t, 3> deleteCount = {0};
+
+            instance.Add(addMemento);
+            ++addCount[0];
+            ObjectHandle* addHandle1 = instance.Add(addMemento);
+            ++addCount[0];
+            instance.Push(ObjectChanges::TimeUnit{0});
+
+            REQUIRE(true == instance.IsEmpty());
+
+            instance.Add(addMemento);
+            ++addCount[1];
+            instance.Modify(addHandle1, modifyMemento, &Object::operator+=);
+            ++modifyCount[1];
+
+            REQUIRE(false == instance.IsEmpty());
+
+            instance.Push(ObjectChanges::TimeUnit{1});
+
+            REQUIRE(true == instance.IsEmpty());
+
+            instance.Add(addMemento);
+            ++addCount[2];
+
+            instance.Delete(addHandle1);
+            ++deleteCount[2];
+
+            instance.Push(ObjectChanges::TimeUnit{2});
+
+            REQUIRE(true == instance.IsEmpty());
+
+            THEN("by default all pushes are pulled")
+            {
+                changes.Pull().Export(adds, modifies, deletes);
+
+                REQUIRE(std::accumulate(addCount.cbegin(), addCount.cend(), 0) == adds.size());
+                REQUIRE(std::accumulate(modifyCount.cbegin(), modifyCount.cend(), 0) == modifies.size());
+                REQUIRE(std::accumulate(deleteCount.cbegin(), deleteCount.cend(), 0) == deletes.size());
+            }
+
+            THEN("provided timestamp acts as a threshold")
+            {
+                changes.Pull(ObjectChanges::TimeUnit{1}).Export(adds, modifies, deletes);
+
+                constexpr std::size_t iteratorOffset = 1 + 1; // point to one past desired end
+
+                REQUIRE(std::accumulate(addCount.cbegin(), addCount.cbegin() + iteratorOffset, 0) == adds.size());
+                REQUIRE(std::accumulate(modifyCount.cbegin(), modifyCount.cbegin() + iteratorOffset, 0) == modifies.size());
+                REQUIRE(std::accumulate(deleteCount.cbegin(), deleteCount.cbegin() + iteratorOffset, 0) == deletes.size());
             }
         }
     }

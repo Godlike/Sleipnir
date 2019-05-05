@@ -55,7 +55,7 @@ public:
         Instance(Instance&& other) = default;
         Instance& operator=(Instance&& other) = default;
 
-        bool operator<(Instance const& other) const;
+        bool operator>(Instance const& other) const;
 
         bool IsEmpty() const;
         uint16_t GetPriority() const { return m_priority; }
@@ -122,14 +122,15 @@ private:
     struct PushCommand
     {
         PushCommand(Instance& instance, TimeUnit timestamp);
-        bool operator<(PushCommand const& other) const;
+        bool operator>(PushCommand const& other) const;
 
         Instance instance;
         TimeUnit timestamp;
     };
 
-    std::priority_queue<PushCommand> m_pushes;
+    using PushPriorityQueue = std::priority_queue<PushCommand, std::vector<PushCommand>, std::greater<PushCommand>>;
 
+    PushPriorityQueue m_pushes;
 };
 
 }
