@@ -12,6 +12,7 @@
 #include <mutex>
 #include <queue>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -89,7 +90,7 @@ public:
     class Integrator
     {
     public:
-        Integrator(TCollection& collection, HandleDeleter deleter = [](Handle handle) -> void { if constexpr (std::is_pointer_v<Handle>) { delete handle; } });
+        Integrator(TCollection& collection, HandleDeleter deleter = [](Handle handle) -> void { if constexpr (std::is_pointer<Handle>::value) { delete handle; } });
 
         void Integrate(Changes::Instance& diff);
 
@@ -98,7 +99,7 @@ public:
         HandleDeleter m_handleDeleter;
     };
 
-    Changes(HandleCreator creator = []() -> Handle { if constexpr (std::is_pointer_v<Handle>) { return new typename std::remove_reference<decltype(*Handle())>::type; } else { return Handle(); } });
+    Changes(HandleCreator creator = []() -> Handle { if constexpr (std::is_pointer<Handle>::value) { return new typename std::remove_reference<decltype(*Handle())>::type; } else { return Handle(); } });
 
     Changes(Changes const& other) = delete;
     Changes& operator=(Changes const& other) = delete;

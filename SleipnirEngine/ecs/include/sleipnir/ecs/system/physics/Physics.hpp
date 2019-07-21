@@ -19,7 +19,6 @@
 
 #include <sleipnir/ecs/system/Skeleton.hpp>
 #include <sleipnir/ecs/system/physics/PhysicsThread.hpp>
-#include <sleipnir/ecs/system/physics/SpawnInfo.hpp>
 
 #include <memory>
 
@@ -61,44 +60,24 @@ public:
      */
     void Update() override;
 
-    /** @brief  Spawns physics body handle
+    /** @brief  Creates change control instance linked to @p m_physicsThread
      *
-     *  @param  info    body information
+     *  @note   This method is a proxy for PhysicsThread::CloneBodyChanges()
      *
-     *  @return newly created body handle
+     *  @param  priority    priority for instance pushes
      *
-     *  @sa DeleteBody()
+     *  @return change control instance linked to @p m_physicsThread
      */
-    BodyHandle* SpawnBody(SpawnInfo const& info);
-
-    /** @brief  Removes body handle from physics subsystem
-     *
-     *  @param  pHandle pointer to body handle
-     *
-     *  @sa SpawnBody()
-     */
-    void DeleteBody(BodyHandle const* pHandle);
-
-    /** @brief  Creates gravity source in physics subsystem
-     *
-     *  @param  id          force id
-     *  @param  position    gravity source position in world
-     *  @param  magnitude   gravity pull strength
-     *
-     *  @sa DeleteGravitySource()
-     */
-    void CreateGravitySource(uint32_t id, glm::vec3 position, double magnitude);
-
-    /** @brief  Deletes gravity source from physics sybsystem
-     *
-     *  @param  id  force id
-     *
-     *  @sa CreateGravitySource()
-     */
-    void DeleteGravitySource(uint32_t id);
+    BodyChanges::Instance CloneBodyChanges(uint16_t priority = 0x8000) const
+    {
+        return m_physicsThread.CloneBodyChanges(priority);
+    }
 
     //! Returns current time in physics world
-    WorldTime::TimeUnit GetCurrentTime() const { return m_physicsThread.GetCurrentTime(); }
+    WorldTime::TimeUnit GetCurrentTime() const
+    {
+        return m_physicsThread.GetCurrentTime();
+    }
 
 private:
     /** @brief  Subsystem responsible for handling physics controls */
@@ -110,7 +89,7 @@ private:
          *  @param  world           entity world
          *  @param  physicsThread   physics subsystem
          */
-        Control(entity::World& world, PhysicsThread& physicsThread);
+        Control(entity::World& world, WorldTime& worldTime, PhysicsThread& physicsThread);
 
         //! Default destructor
         ~Control() = default;
@@ -122,8 +101,11 @@ private:
         void Update() override;
 
     private:
-        //! Reference to physics subsystem
-        PhysicsThread& m_physicsThread;
+        //! Reference to time holder
+        WorldTime& m_worldTime;
+
+        //! Local instance of physics body changes
+        BodyChanges::Instance m_physicsBodyChanges;
     };
 
     //! Physics subsystem

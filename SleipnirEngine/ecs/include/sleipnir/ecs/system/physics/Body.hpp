@@ -8,7 +8,6 @@
 #define SLEIPNIR_ECS_SYSTEM_PHYSICS_BODY_HPP
 
 #include <sleipnir/ecs/system/physics/adapter/pegasus/Body.hpp>
-#include <pegasus/Scene.hpp>
 
 namespace sleipnir
 {
@@ -19,7 +18,9 @@ namespace system
 namespace physics
 {
 
-using Body = adapter::pegasus::Body;
+using BodyObject = adapter::pegasus::BodyObject;
+using BodyMemento = adapter::pegasus::BodyMemento;
+using BodyCollection = adapter::pegasus::BodyCollection;
 
 }
 }

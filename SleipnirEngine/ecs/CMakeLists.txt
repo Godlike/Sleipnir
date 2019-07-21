@@ -18,18 +18,22 @@ set(SLEIPNIR_ECS_ENTITY_SOURCES
     source/entity/World.cpp
 )
 
-set(SLEIPNIR_ECS_SYSTEM_SOURCES
-    source/system/physics/BodyController.cpp
-    source/system/physics/DynamicForceController.cpp
-    source/system/physics/PegasusAdapter.cpp
-    source/system/physics/Physics.cpp
-    source/system/physics/PhysicsThread.cpp
+set(SLEIPNIR_ECS_SYSTEM_PHYSICS
+    source/system/physics/adapter/pegasus/Body.cpp
+    source/system/physics/adapter/pegasus/Engine.cpp
+)
 
+set(SLEIPNIR_ECS_SYSTEM_SOURCES
+    source/system/physics/PhysicsThread.cpp
+    source/system/physics/Physics.cpp
+
+    source/system/Timer.cpp
+    source/system/TimeBase.cpp
+    source/system/TimeWithPhysics.cpp
     source/system/Lifetime.cpp
     source/system/Render.cpp
-    source/system/TimeBase.cpp
-    source/system/Timer.cpp
-    source/system/TimeWithPhysics.cpp
+
+    ${SLEIPNIR_ECS_SYSTEM_PHYSICS}
 )
 
 set(SLEIPNIR_ECS_COMMON_SOURCES

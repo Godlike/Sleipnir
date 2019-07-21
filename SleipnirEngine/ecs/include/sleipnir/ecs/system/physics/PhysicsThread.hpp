@@ -9,9 +9,7 @@
 
 #include <sleipnir/ecs/WorldTime.hpp>
 
-#include <sleipnir/ecs/system/physics/BodyController.hpp>
 #include <sleipnir/ecs/system/physics/BodyHandle.hpp>
-#include <sleipnir/ecs/system/physics/DynamicForceController.hpp>
 #include <sleipnir/ecs/system/physics/Engine.hpp>
 
 #include <sleipnir/utility/QSBR.hpp>
@@ -65,6 +63,19 @@ public:
 
     //! Returns current time in physics world
     WorldTime::TimeUnit GetCurrentTime() const;
+
+    /** @brief  Creates change control instance linked to @p m_physicsEngine
+     *
+     *  @note   This method is a proxy for Engine::CloneBodyChanges()
+     *
+     *  @param  priority    priority for instance pushes
+     *
+     *  @return change control instance linked to @p m_physicsEngine
+     */
+    BodyChanges::Instance CloneBodyChanges(uint16_t priority = 0x8000) const
+    {
+        return m_physicsEngine.CloneBodyChanges(priority);
+    }
 
     //! QSBR memory reclaimer controlling @ref BodyPositions
     utility::QSBR memoryReclaimer;

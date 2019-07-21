@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2018 by Godlike
+* Copyright (C) 2019 by Godlike
 * This code is licensed under the MIT license (MIT)
 * (http://opensource.org/licenses/MIT)
 */
@@ -8,10 +8,11 @@
 #define SLEIPNIR_ECS_SYSTEM_PHYSICS_ADAPTER_PEGASUS_ENGINE_HPP
 
 #include <sleipnir/ecs/WorldTime.hpp>
+#include <sleipnir/ecs/system/physics/Primitives.hpp>
+
+#include <sleipnir/ecs/system/physics/adapter/pegasus/Body.hpp>
 
 #include <pegasus/Scene.hpp>
-#include <pegasus/Primitives.hpp>
-#include <pegasus/Force.hpp>
 
 #include <cstddef>
 #include <list>
@@ -26,6 +27,10 @@ namespace system
 {
 namespace physics
 {
+namespace adapter
+{
+namespace pegasus
+{
 
 /** @brief  Adapter for Pegasus API
  *
@@ -34,9 +39,6 @@ namespace physics
 class Engine
 {
 public:
-    //! Shortcut to a collection of pegasus::scene::Primitive pointers
-    using Primitives = std::list<pegasus::scene::Primitive*>;
-
     //! Basic constructor
     Engine();
 
@@ -46,69 +48,41 @@ public:
     //! Initialize default pegasus state
     void Initialize();
 
-    /** @brief  Spawns physics body handle
-     *
-     *  @param  info    body information
-     *
-     *  @return newly created body handle
-     *
-     *  @sa PushBody(), DeleteBody()
-     */
-    pegasus::scene::Handle SpawnBody(SpawnInfo const& info);
-
-    /** @brief  Applies given @p force to given @p bodyHandle
-     *
-     *  @param  bodyHandle  body handle
-     *  @param  force       force to be applied
-     *
-     *  @sa SpawnBody(), DeleteBody()
-     */
-    void PushBody(pegasus::scene::Handle bodyHandle, glm::vec3 force);
-
-    /** @brief  Removes body handle from pegasus
-     *
-     *  @param  bodyHandle  body handle
-     *
-     *  @sa SpawnBody(), PushBody()
-     */
-    void DeleteBody(pegasus::scene::Handle bodyHandle);
-
-    /** @brief  Creates gravity source in pegasus
-     *
-     *  @param  id          force id
-     *  @param  position    gravity source position in world
-     *  @param  magnitude   gravity pull strength
-     *
-     *  @sa DeleteGravitySource()
-     */
-    void CreateGravitySource(uint32_t id, glm::vec3 position, double magnitude);
-
-    /** @brief  Deletes gravity source from pegasus
-     *
-     *  @param  id  force id
-     *
-     *  @sa CreateGravitySource()
-     */
-    void DeleteGravitySource(uint32_t id);
-
     /** @brief  Progress physics world by given time period
      *
      *  @param  tick    time period
      */
     void Run(WorldTime::TimeUnit tick);
 
-    //! Collection of primitives
-    Primitives primitives;
+    /** @brief  Integrate changes up until given @p timepoint
+     *
+     *  @param  timepoint   target time point of integration
+     */
+    void Integrate(WorldTime::TimeUnit timepoint);
 
-    //! Amount of primitives in @p primitives
-    std::size_t primitiveCount;
+    /** @brief  Creates change control instance linked to @p m_bodyChanges
+     *
+     *  @param  priority    priority for instance pushes
+     *
+     *  @return change control instance linked to @p m_bodyChanges
+     */
+    BodyChanges::Instance CloneBodyChanges(uint16_t priority = 0x8000) const { return m_bodyChanges.Clone(priority); }
+
+    //! Returns a const reference to physics body collection
+    BodyCollection const& GetBodyCollection() const { return m_bodyCollection; }
 
 private:
     //! Pegasus world
-    pegasus::scene::Scene m_scene;
+    ::pegasus::scene::Scene m_scene;
+
+    BodyCollection m_bodyCollection;
+    BodyChanges m_bodyChanges;
+    BodyChanges::Integrator<BodyCollection> m_bodyIntegrator;
 
 };
 
+} // namespace pegasus
+} // namespace adapter
 } // namespace physics
 } // namespace system
 } // namespace ecs

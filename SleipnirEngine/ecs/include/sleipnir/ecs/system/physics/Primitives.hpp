@@ -22,11 +22,9 @@ namespace system
 namespace physics
 {
 
-using BodyChanges = sleipnir::utility::cc::Changes<BodyObject::Memento>;
-using BodyIntegrator = BodyChanges::Integrator<BodyCollection>;
+using BodyChanges = sleipnir::utility::cc::Changes<BodyMemento, BodyHandle*>;
 
 // using ForceChanges = sleipnir::utility::cc::Changes<ForceObject::Memento>;
-// using ForceIntegrator = ForceChanges::Integrator<ForceCollection>;
 
 }
 }

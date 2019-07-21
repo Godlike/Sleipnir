@@ -6,6 +6,8 @@
 
 #include <sleipnir/ecs/system/physics/PhysicsThread.hpp>
 
+#include <sleipnir/ecs/system/physics/Body.hpp>
+
 #include <sleipnir/utility/InternalLoggers.hpp>
 
 #include <sleipnir/utility/Config.hpp>
@@ -30,8 +32,7 @@ PhysicsThread::PhysicsThread(WorldTime& worldTime)
     , m_working(true)
     , m_timeControl(worldTime)
     , m_currentPositions(nullptr)
-    , m_physicsEngine(m_changeControl)
-    , m_changeControl()
+    , m_physicsEngine()
 {
     m_currentPositions.store(new BodyPositions(), std::memory_order_release);
 }
@@ -66,32 +67,9 @@ PhysicsThread::BodyPositions* PhysicsThread::GetBodyPositions() const
     return m_currentPositions.load(std::memory_order_acquire);
 }
 
-void PhysicsThread::CreateGravitySource(uint32_t id, glm::vec3 position, double magnitude)
-{
-    m_dynamicForceController.Create({
-        id
-        , m_timeControl.worldTime.GetTime()
-        , position
-        , magnitude
-    });
-}
-
-void PhysicsThread::DeleteGravitySource(uint32_t id)
-{
-    m_dynamicForceController.Delete({
-        id
-        , m_timeControl.worldTime.GetTime()
-    });
-}
-
 WorldTime::TimeUnit PhysicsThread::GetCurrentTime() const
 {
     return WorldTime::TimeUnit(m_timeControl.currentTimeRaw.load(std::memory_order_acquire));
-}
-
-ChangeControl::Instance PhysicsThread::CloneChanges(uint16_t priority)
-{
-    return m_changeControl.Clone(priority);
 }
 
 // PhysicsThread::TimeControl
@@ -117,7 +95,7 @@ void PhysicsThread::Routine()
         for (TimeControl::TimeUnit future = (m_timeControl.currentTime + utility::Config::PhysicsTick); future < target; future += utility::Config::PhysicsTick)
         {
             {
-                mule::ScopeProfiler profiler(LOG_PROFILE, "pegasus");
+                mule::ScopeProfiler profiler(LOG_PROFILE, "pegasus_run");
                 m_physicsEngine.Run(utility::Config::PhysicsTick);
             }
 
@@ -129,8 +107,10 @@ void PhysicsThread::Routine()
 
             memoryReclaimer.OnQuiescentState(m_sectionId);
 
-            m_dynamicForceController.Check(future);
-            m_bodyController.Check(future);
+            {
+                mule::ScopeProfiler profiler(LOG_PROFILE, "pegasus_integrate");
+                m_physicsEngine.Integrate(future);
+            }
         }
 
         std::this_thread::yield();
@@ -143,18 +123,21 @@ void PhysicsThread::PollPositions()
     BodyPositions* pNewPositions = new BodyPositions();
 
     {
-        BodyPositions& newPositions = *pNewPositions;
-        newPositions.reserve(m_physicsEngine.primitiveCount + 1);
+        BodyCollection const& bodies = m_physicsEngine.GetBodyCollection();
+        BodyCollection::Collection const& objects = bodies.GetObjectCollection();
 
-        newPositions[pegasus::scene::Handle()] = glm::dvec3{
+        BodyPositions& newPositions = *pNewPositions;
+        newPositions.reserve(objects.size() + 1);
+
+        newPositions[BodyObject::UNKNOWN_ID] = glm::dvec3{
             std::numeric_limits<double>::quiet_NaN()
             , std::numeric_limits<double>::quiet_NaN()
             , std::numeric_limits<double>::quiet_NaN()
         };
 
-        for (pegasus::scene::Primitive const* const primitive : m_physicsEngine.primitives)
+        for (auto const& [handle, pObject] : objects)
         {
-            newPositions[primitive->GetBodyHandle()] = primitive->GetBody().linearMotion.position;
+            newPositions[handle] = pObject->GetPosition();
         }
     }
 

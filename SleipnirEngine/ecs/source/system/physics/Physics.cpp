@@ -21,7 +21,7 @@ Physics::Physics(entity::World& world, WorldTime& worldTime)
     : Skeleton<component::PositionComponent, component::PhysicsComponent>(world)
     , m_physicsThread(worldTime)
     , m_sectionId(m_physicsThread.memoryReclaimer.RegisterSection())
-    , m_control(world, m_physicsThread)
+    , m_control(world, worldTime, m_physicsThread)
 {
 
 }
@@ -60,31 +60,12 @@ void Physics::Update()
     m_physicsThread.memoryReclaimer.OnQuiescentState(m_sectionId);
 }
 
-BodyHandle* Physics::SpawnBody(SpawnInfo const& info)
-{
-    return m_physicsThread.SpawnBody(info);
-}
-
-void Physics::DeleteBody(BodyHandle const* pHandle)
-{
-    m_physicsThread.DeleteBody(pHandle);
-}
-
-void Physics::CreateGravitySource(uint32_t id, glm::vec3 position, double magnitude)
-{
-    m_physicsThread.CreateGravitySource(id, position, magnitude);
-}
-
-void Physics::DeleteGravitySource(uint32_t id)
-{
-    m_physicsThread.DeleteGravitySource(id);
-}
-
 // Physics::Control::
 
-Physics::Control::Control(entity::World& world, PhysicsThread& physicsThread)
+Physics::Control::Control(entity::World& world, WorldTime& worldTime, PhysicsThread& physicsThread)
     : Skeleton<component::PhysicsComponent, component::ControlComponent>(world)
-    , m_physicsThread(physicsThread)
+    , m_worldTime(worldTime)
+    , m_physicsBodyChanges(physicsThread.CloneBodyChanges())
 {
 
 }
@@ -98,10 +79,19 @@ void Physics::Control::Update()
         component::PhysicsComponent const& physComp = entity.GetComponent<component::PhysicsComponent>();
         component::ControlComponent const& controlComp = entity.GetComponent<component::ControlComponent>();
 
-        m_physicsThread.PushBody(physComp.pHandle, controlComp.force);
+        BodyMemento::LinearMotion linear;
+        linear.force = controlComp.force;
+
+        BodyMemento memento;
+        memento.handle = physComp.pHandle->bodyHandle.load();
+        memento.linear = { true, linear };
+
+        m_physicsBodyChanges.Modify(physComp.pHandle, memento, &BodyObject::operator+=);
 
         entity.DeleteComponent<component::ControlComponent>();
     }
+
+    m_physicsBodyChanges.Push(m_worldTime.GetTime());
 }
 
 } // namespace physics
