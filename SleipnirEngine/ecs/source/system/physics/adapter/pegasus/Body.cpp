@@ -303,7 +303,7 @@ bool BodyCollection::Delete(BodyHandle* pHandle)
 
     if (m_collection.end() != it)
     {
-        assert(nullptr != it.second);
+        assert(nullptr != it->second);
 
         Object::Handle bodyHandle = it->second->m_handle;
 
@@ -324,6 +324,7 @@ bool BodyCollection::Delete(BodyHandle* pHandle)
         }
 
         delete it->second;
+        m_collection.erase(it);
 
         return true;
     }
