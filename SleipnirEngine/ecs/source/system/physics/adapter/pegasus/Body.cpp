@@ -19,49 +19,139 @@ namespace adapter
 namespace pegasus
 {
 
+namespace
+{
+    void ApplyMemento(::pegasus::mechanics::Body& body, BodyMemento const& memento)
+    {
+        if (memento.linear.first)
+        {
+            BodyMemento::LinearMotion const& linearMotion = memento.linear.second;
+
+            body.linearMotion.position = linearMotion.position;
+            body.linearMotion.velocity = linearMotion.velocity;
+            body.linearMotion.acceleration = linearMotion.acceleration;
+            body.linearMotion.force = linearMotion.force;
+        }
+
+        if (memento.angular.first)
+        {
+            BodyMemento::AngularMotion const& angularMotion = memento.angular.second;
+
+            body.angularMotion.orientation = angularMotion.orientation;
+            body.angularMotion.velocity = angularMotion.velocity;
+            body.angularMotion.acceleration = angularMotion.acceleration;
+            body.angularMotion.torque = angularMotion.torque;
+        }
+
+        if (memento.mass.first)
+        {
+            if (!std::isnan(memento.mass.second))
+            {
+                body.material.SetMass(memento.mass.second);
+            }
+            else
+            {
+                body.material.SetInfiniteMass();
+            }
+        }
+
+        if (memento.damping.first)
+        {
+            assert(!std::isnan(memento.damping.second));
+            body.material.damping = memento.damping.second;
+        }
+    }
+
+    void AddMemento(::pegasus::mechanics::Body& body, BodyMemento const& memento)
+    {
+        if (memento.linear.first)
+        {
+            BodyMemento::LinearMotion const& linearMotion = memento.linear.second;
+
+            body.linearMotion.position += linearMotion.position;
+            body.linearMotion.velocity += linearMotion.velocity;
+            body.linearMotion.acceleration += linearMotion.acceleration;
+            body.linearMotion.force += linearMotion.force;
+        }
+
+        if (memento.angular.first)
+        {
+            BodyMemento::AngularMotion const& angularMotion = memento.angular.second;
+
+            body.angularMotion.orientation += angularMotion.orientation;
+            body.angularMotion.velocity += angularMotion.velocity;
+            body.angularMotion.acceleration += angularMotion.acceleration;
+            body.angularMotion.torque += angularMotion.torque;
+        }
+
+        if (memento.mass.first)
+        {
+            if (!(std::isnan(memento.mass.second) || body.material.HasInfiniteMass()))
+            {
+                body.material.SetMass(body.material.GetMass() + memento.mass.second);
+            }
+            else
+            {
+                body.material.SetInfiniteMass();
+            }
+        }
+
+        if (memento.damping.first)
+        {
+            assert(!std::isnan(memento.damping.second));
+            body.material.damping += memento.damping.second;
+        }
+    }
+
+    void MultiplyMemento(::pegasus::mechanics::Body& body, BodyMemento const& memento)
+    {
+        if (memento.linear.first)
+        {
+            BodyMemento::LinearMotion const& linearMotion = memento.linear.second;
+
+            body.linearMotion.position *= linearMotion.position;
+            body.linearMotion.velocity *= linearMotion.velocity;
+            body.linearMotion.acceleration *= linearMotion.acceleration;
+            body.linearMotion.force *= linearMotion.force;
+        }
+
+        if (memento.angular.first)
+        {
+            BodyMemento::AngularMotion const& angularMotion = memento.angular.second;
+
+            body.angularMotion.orientation *= angularMotion.orientation;
+            body.angularMotion.velocity *= angularMotion.velocity;
+            body.angularMotion.acceleration *= angularMotion.acceleration;
+            body.angularMotion.torque *= angularMotion.torque;
+        }
+
+        if (memento.mass.first)
+        {
+            if (!(std::isnan(memento.mass.second) || body.material.HasInfiniteMass()))
+            {
+                body.material.SetMass(body.material.GetMass() * memento.mass.second);
+            }
+            else
+            {
+                body.material.SetInfiniteMass();
+            }
+        }
+
+        if (memento.damping.first)
+        {
+            assert(!std::isnan(memento.damping.second));
+            body.material.damping *= memento.damping.second;
+        }
+    }
+}
+
 // BodyObject::
 
 BodyObject& BodyObject::operator=(Memento const& memento)
 {
     ::pegasus::mechanics::Body& body = m_scene.GetBody(m_handle);
 
-    if (memento.linear.first)
-    {
-        BodyMemento::LinearMotion const& linearMotion = memento.linear.second;
-
-        body.linearMotion.position = linearMotion.position;
-        body.linearMotion.velocity = linearMotion.velocity;
-        body.linearMotion.acceleration = linearMotion.acceleration;
-        body.linearMotion.force = linearMotion.force;
-    }
-
-    if (memento.angular.first)
-    {
-        BodyMemento::AngularMotion const& angularMotion = memento.angular.second;
-
-        body.angularMotion.orientation = angularMotion.orientation;
-        body.angularMotion.velocity = angularMotion.velocity;
-        body.angularMotion.acceleration = angularMotion.acceleration;
-        body.angularMotion.torque = angularMotion.torque;
-    }
-
-    if (memento.mass.first)
-    {
-        if (!std::isnan(memento.mass.second))
-        {
-            body.material.SetMass(memento.mass.second);
-        }
-        else
-        {
-            body.material.SetInfiniteMass();
-        }
-    }
-
-    if (memento.damping.first)
-    {
-        assert(!std::isnan(memento.damping.second));
-        body.material.damping = memento.damping.second;
-    }
+    ApplyMemento(body, memento);
 
     return *this;
 }
@@ -70,43 +160,7 @@ BodyObject& BodyObject::operator+=(Memento const& memento)
 {
     ::pegasus::mechanics::Body& body = m_scene.GetBody(m_handle);
 
-    if (memento.linear.first)
-    {
-        BodyMemento::LinearMotion const& linearMotion = memento.linear.second;
-
-        body.linearMotion.position += linearMotion.position;
-        body.linearMotion.velocity += linearMotion.velocity;
-        body.linearMotion.acceleration += linearMotion.acceleration;
-        body.linearMotion.force += linearMotion.force;
-    }
-
-    if (memento.angular.first)
-    {
-        BodyMemento::AngularMotion const& angularMotion = memento.angular.second;
-
-        body.angularMotion.orientation += angularMotion.orientation;
-        body.angularMotion.velocity += angularMotion.velocity;
-        body.angularMotion.acceleration += angularMotion.acceleration;
-        body.angularMotion.torque += angularMotion.torque;
-    }
-
-    if (memento.mass.first)
-    {
-        if (!(std::isnan(memento.mass.second) || body.material.HasInfiniteMass()))
-        {
-            body.material.SetMass(body.material.GetMass() + memento.mass.second);
-        }
-        else
-        {
-            body.material.SetInfiniteMass();
-        }
-    }
-
-    if (memento.damping.first)
-    {
-        assert(!std::isnan(memento.damping.second));
-        body.material.damping += memento.damping.second;
-    }
+    AddMemento(body, memento);
 
     return *this;
 }
@@ -115,43 +169,7 @@ BodyObject& BodyObject::operator*=(Memento const& memento)
 {
     ::pegasus::mechanics::Body& body = m_scene.GetBody(m_handle);
 
-    if (memento.linear.first)
-    {
-        BodyMemento::LinearMotion const& linearMotion = memento.linear.second;
-
-        body.linearMotion.position *= linearMotion.position;
-        body.linearMotion.velocity *= linearMotion.velocity;
-        body.linearMotion.acceleration *= linearMotion.acceleration;
-        body.linearMotion.force *= linearMotion.force;
-    }
-
-    if (memento.angular.first)
-    {
-        BodyMemento::AngularMotion const& angularMotion = memento.angular.second;
-
-        body.angularMotion.orientation *= angularMotion.orientation;
-        body.angularMotion.velocity *= angularMotion.velocity;
-        body.angularMotion.acceleration *= angularMotion.acceleration;
-        body.angularMotion.torque *= angularMotion.torque;
-    }
-
-    if (memento.mass.first)
-    {
-        if (!(std::isnan(memento.mass.second) || body.material.HasInfiniteMass()))
-        {
-            body.material.SetMass(body.material.GetMass() * memento.mass.second);
-        }
-        else
-        {
-            body.material.SetInfiniteMass();
-        }
-    }
-
-    if (memento.damping.first)
-    {
-        assert(!std::isnan(memento.damping.second));
-        body.material.damping *= memento.damping.second;
-    }
+    MultiplyMemento(body, memento);
 
     return *this;
 }
@@ -169,17 +187,15 @@ BodyObject::BodyObject(Memento const& memento
     , m_scene(scene)
     , m_pPrimitive(nullptr)
 {
-    m_handle = m_scene.MakeBody();
-
-    operator=(memento);
-
     if (memento.pShape)
     {
         {
             using ::pegasus::scene::Primitive;
             using Type = arion::SimpleShape::Type;
 
-            ::pegasus::mechanics::Body& body = m_scene.GetBody(m_handle);
+            ::pegasus::mechanics::Body body;
+            ApplyMemento(body, memento);
+
             Primitive::Type const primitiveType = (!body.material.HasInfiniteMass() ? Primitive::Type::DYNAMIC : Primitive::Type::STATIC);
 
             switch (memento.pShape->type)
@@ -198,12 +214,6 @@ BodyObject::BodyObject(Memento const& memento
                 {
                     arion::Box& shape = *static_cast<arion::Box*>(memento.pShape);
 
-                    m_pPrimitive = new ::pegasus::scene::Box(m_scene
-                        , primitiveType
-                        , body
-                        , shape
-                    );
-
                     body.material.SetMomentOfInertia(
                         ::pegasus::mechanics::CalculateSolidCuboidMomentOfInertia(
                             glm::length(shape.iAxis)
@@ -213,17 +223,17 @@ BodyObject::BodyObject(Memento const& memento
                         )
                     );
 
+                    m_pPrimitive = new ::pegasus::scene::Box(m_scene
+                        , primitiveType
+                        , body
+                        , shape
+                    );
+
                     break;
                 }
                 case Type::SPHERE:
                 {
                     arion::Sphere& shape = *static_cast<arion::Sphere*>(memento.pShape);
-
-                    m_pPrimitive = new ::pegasus::scene::Sphere(m_scene
-                        , primitiveType
-                        , body
-                        , shape
-                    );
 
                     body.material.SetMomentOfInertia(
                         ::pegasus::mechanics::CalculateSolidSphereMomentOfInertia(
@@ -232,10 +242,17 @@ BodyObject::BodyObject(Memento const& memento
                         )
                     );
 
+                    m_pPrimitive = new ::pegasus::scene::Sphere(m_scene
+                        , primitiveType
+                        , body
+                        , shape
+                    );
+
                     break;
                 }
                 default:
                 {
+                    assert(false);
                     break;
                 }
             }
@@ -243,13 +260,13 @@ BodyObject::BodyObject(Memento const& memento
     }
 
     assert(nullptr != m_pPrimitive);
+
+    m_handle = m_pPrimitive->GetBodyHandle();
 }
 
 BodyObject::~BodyObject()
 {
     delete m_pPrimitive;
-
-    m_scene.RemoveBody(m_handle);
 }
 
 // BodyCollection::
@@ -279,7 +296,7 @@ BodyCollection::Object* BodyCollection::Spawn(BodyHandle* pHandle, Object::Memen
     assert(BodyMemento::UNKNOWN_ID != pObj->m_handle);
     assert(m_collection.cend() == m_collection.find(pObj->m_handle));
 
-    pHandle->bodyHandle = pObj->m_handle;
+    pHandle->bodyHandle.store(pObj->m_handle);
     m_collection.emplace(pObj->m_handle, pObj);
 
     m_primitives.push_back(pObj->m_pPrimitive);

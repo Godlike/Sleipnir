@@ -9,8 +9,6 @@
 
 #include <sleipnir/ecs/WorldTime.hpp>
 
-#include <sleipnir/ecs/entity/Entity.hpp>
-
 #include <sleipnir/ecs/Types.hpp>
 
 #include <wink/signal.hpp>

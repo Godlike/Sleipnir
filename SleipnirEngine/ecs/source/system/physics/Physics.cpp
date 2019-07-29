@@ -74,24 +74,27 @@ void Physics::Control::Update()
 {
     entity::World::Entities entities = GetEntities();
 
-    for (entity::Entity& entity : entities)
+    if (!entities.empty())
     {
-        component::PhysicsComponent const& physComp = entity.GetComponent<component::PhysicsComponent>();
-        component::ControlComponent const& controlComp = entity.GetComponent<component::ControlComponent>();
+        for (entity::Entity& entity : entities)
+        {
+            component::PhysicsComponent const& physComp = entity.GetComponent<component::PhysicsComponent>();
+            component::ControlComponent const& controlComp = entity.GetComponent<component::ControlComponent>();
 
-        BodyMemento::LinearMotion linear;
-        linear.force = controlComp.force;
+            BodyMemento::LinearMotion linear;
+            linear.velocity = controlComp.force;
 
-        BodyMemento memento;
-        memento.handle = physComp.pHandle->bodyHandle.load();
-        memento.linear = { true, linear };
+            BodyMemento memento;
+            memento.handle = physComp.pHandle->bodyHandle.load();
+            memento.linear = { true, linear };
 
-        m_physicsBodyChanges.Modify(physComp.pHandle, memento, &BodyObject::operator+=);
+            m_physicsBodyChanges.Modify(physComp.pHandle, memento, &BodyObject::operator+=);
 
-        entity.DeleteComponent<component::ControlComponent>();
+            entity.DeleteComponent<component::ControlComponent>();
+        }
+
+        m_physicsBodyChanges.Push(m_worldTime.GetTime());
     }
-
-    m_physicsBodyChanges.Push(m_worldTime.GetTime());
 }
 
 } // namespace physics
